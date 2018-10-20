@@ -41,9 +41,10 @@ inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, color_t rgba) {
 }
 
 void SoftwareRasterizer::clear() {
-  for (uint32_t x = 0; x < this->getWidth(); x++) {
-    for (uint32_t y = 0; y < this->getWidth(); y++) {
-      this->drawPixel({x, y}, this->currentColor);
+  for (fb_pos_t y = 0; y < this->getWidth(); y++) {
+    fb_pos_t yOff = y * width;
+    for (fb_pos_t x = 0; x < this->getWidth(); x++) {
+      this->drawPixel(x + yOff, this->currentColor);
     }
   }
 }
