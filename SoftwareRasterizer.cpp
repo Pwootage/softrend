@@ -30,7 +30,14 @@ const framebuffer_t *SoftwareRasterizer::getFramebuffer() const {
 inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, color_t rgba) {
 //  assert(pos.x >= 0);
 //  assert(pos.y >= 0);
-  this->framebuffer[(abs(pos.x) % width) + (uint32_t) (abs(pos.y) % height) * width] = rgba;
+//  if (pos.x < 0 || pos.y < 0) {
+//    cout << "UHH" << endl;
+//  }
+  this->framebuffer[pos.x + pos.y * width] = rgba;
+}
+
+inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, color_t rgba) {
+  this->framebuffer[idx] = rgba;
 }
 
 void SoftwareRasterizer::clear() {
@@ -51,11 +58,16 @@ inline void SoftwareRasterizer::drawLineLow(fb_pos_t x0, fb_pos_t y0, fb_pos_t x
   }
   fb_pos_t d = 2 * dy - dx;
   fb_pos_t y = y0;
+  fb_pos_t yOff = y * width;
 
   for (fb_pos_t x = x0; x <= x1; x++) {
-    this->drawPixel({x, y}, this->getCurrentColor());
+    if (y > 0 && y < this->getHeight()
+        && x > 0 && x < this->getWidth()) {
+      this->drawPixel(x + yOff, this->getCurrentColor());
+    }
     if (d > 0) {
       y = y + yi;
+      yOff = y * width;
       d = d - 2 * dx;
     }
     d = d + 2 * dy;
@@ -74,7 +86,10 @@ inline void SoftwareRasterizer::drawLineHigh(fb_pos_t x0, fb_pos_t y0, fb_pos_t 
   fb_pos_t x = x0;
 
   for (fb_pos_t y = y0; y <= y1; y++) {
-    this->drawPixel({x, y}, this->getCurrentColor());
+    if (y > 0 && y < this->getHeight()
+        && x > 0 && x < this->getWidth()) {
+      this->drawPixel(x + y * width, this->getCurrentColor());
+    }
     if (d > 0) {
       x = x + xi;
       d = d - 2 * dy;
@@ -90,18 +105,29 @@ void SoftwareRasterizer::drawLine(const glm::ivec2 &a, const glm::ivec2 &b) {
 
   // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
   if (x0 == x1) {
+    if (x0 < 0 || x0 > this->width) {
+      return;
+    }
     if (y0 > y1) {
       swap(y0, y1);
     }
+    y0 = std::max(0, y0);
+    y1 = std::min(this->height, y1);
     for (fb_pos_t y = y0; y <= y1; y++) {
-      this->drawPixel({x0, y}, this->currentColor);
+      this->drawPixel(x0 + y * width, this->currentColor);
     }
   } else if (y0 == y1) {
+    if (y0 < 0 || y0 > this->height) {
+      return;
+    }
     if (x0 > x1) {
       swap(x0, x1);
     }
+    x0 = std::max(0, x0);
+    x1 = std::min(this->width, x1);
+    fb_pos_t yOff = y0 * width;
     for (fb_pos_t x = x0; x <= x1; x++) {
-      this->drawPixel({x, y0}, this->currentColor);
+      this->drawPixel(x + yOff, this->currentColor);
     }
   } else if (abs(x0 - x1) < abs(y0 - y1)) {
     if (y0 > y1) {
@@ -132,7 +158,7 @@ void SoftwareRasterizer::drawTriLines(const glm::ivec2 &a, const glm::ivec2 &b, 
   this->drawLine(c, a);
 }
 
-float vecSign(ivec2 a, ivec2 b, ivec2 c) {
+inline float vecSign(ivec2 a, ivec2 b, ivec2 c) {
   return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y);
 }
 
@@ -150,13 +176,14 @@ void SoftwareRasterizer::drawTriFilled(const glm::ivec2 &a, const glm::ivec2 &b,
   y1 = std::min(y1, height - 1);
 
   for (fb_pos_t y = y0; y <= y1; y++) {
+    fb_pos_t yOff = y * width;
     for (fb_pos_t x = x0; x <= x1; x++) {
       ivec2 p(x, y);
       bool b1 = vecSign(p, a, b) < 0;
       bool b2 = vecSign(p, b, c) < 0;
       bool b3 = vecSign(p, c, a) < 0;
       if ((b1 == b2) && (b2 == b3)) {
-        drawPixel({x, y}, this->currentColor);
+        drawPixel(x + yOff, this->currentColor);
       }
     }
   }

@@ -24,6 +24,7 @@ public:
 
     // Methods
     void drawPixel(const glm::ivec2 &pos, color_t rgba);
+    void drawPixel(fb_pos_t index, color_t rgba);
     void clear();
     void drawLine(const glm::ivec2 &a, const glm::ivec2 &b);
     void drawTriLines(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c);

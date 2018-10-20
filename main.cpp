@@ -1,6 +1,12 @@
+#define GL_SILENCE_DEPRECATION
+
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <cstdint>
+#include <chrono>
+#include <numeric>
+#include <sstream>
+#include <iomanip>
 #include "SoftwareRasterizer.hpp"
 
 using namespace std;
@@ -56,13 +62,32 @@ int main() {
   renderer = new SoftwareRasterizer(FB_WIDTH, FB_HEIGHT);
 
   // main loop
-  glfwSwapInterval(1);
+//  glfwSwapInterval(1);
+
+  constexpr int FRAME_AVG_COUNT = 500;
+  double frameTimes[FRAME_AVG_COUNT];
+  for (int i = 0; i < FRAME_AVG_COUNT; i++) {
+    frameTimes[i] = 1;
+  }
+  glfwSwapInterval(0);
   while (!glfwWindowShouldClose(window)) {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
-    render();
+    {
+      auto startT = chrono::high_resolution_clock::now();
+      render();
+      auto endT = chrono::high_resolution_clock::now();
+      auto time = chrono::duration<double, milli>(endT - startT).count();
+      frameTimes[frame % FRAME_AVG_COUNT] = time;
+    }
+    auto avg = accumulate(begin(frameTimes), end(frameTimes), 0.0) / (double)FRAME_AVG_COUNT;
+    stringstream title;
+    title << "softrend " << fixed << setprecision(2) << avg << " ms " << frame;
+    string titleS = title.str();
+    glfwSetWindowTitle(window, titleS.c_str());
+
     frame++;
     glfwSwapBuffers(window);
 
@@ -92,19 +117,19 @@ void render() {
 
   renderer->setCurrentColor(0xFFFFFF00);
 
-  if (frame % 30 == 0) {
+  for (int i = 0; i < 50; i++) {
+    //  if (frame % 30 == 0) {
     a = {rand() % FB_WIDTH - 100, rand() % FB_HEIGHT};
     b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
     c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
+//  }
+
+    renderer->setCurrentColor(0xFF00FFFF);
+    renderer->drawTriFilled(a, b, c);
+
+    renderer->setCurrentColor(0xFF0000FF);
+    renderer->drawTriLines(a, b, c);
   }
-
-  renderer->setCurrentColor(0xFF00FFFF);
-  renderer->drawTriFilled(a, b, c);
-
-  renderer->setCurrentColor(0xFF0000FF);
-  renderer->drawTriLines(a, b, c);
-
-
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                renderer->getWidth(), renderer->getHeight(),

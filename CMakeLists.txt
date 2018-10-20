@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(softrend)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS -Wall)
+set(CMAKE_CXX_FLAGS_RELEASE -O3)
 
 find_package(glfw3 3.2 REQUIRED)
 find_package(OpenGL REQUIRED)
