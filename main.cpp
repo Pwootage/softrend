@@ -64,7 +64,7 @@ int main() {
   // main loop
 //  glfwSwapInterval(1);
 
-  constexpr int FRAME_AVG_COUNT = 500;
+  constexpr int FRAME_AVG_COUNT = 60;
   double frameTimes[FRAME_AVG_COUNT];
   for (int i = 0; i < FRAME_AVG_COUNT; i++) {
     frameTimes[i] = 1;
@@ -87,8 +87,29 @@ int main() {
     title << "softrend " << fixed << setprecision(2) << avg << " ms " << frame;
     string titleS = title.str();
     glfwSetWindowTitle(window, titleS.c_str());
-
     frame++;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 renderer->getWidth(), renderer->getHeight(),
+                 0, GL_RGBA, GL_FLOAT,
+                 renderer->getFramebuffer());
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBegin(GL_QUADS);
+
+    glColor4f(1, 1, 1, 1);
+
+    glTexCoord2f(0, 1);
+    glVertex3f(-1, -1, 0);
+    glTexCoord2f(0, 0);
+    glVertex3f(-1, 1, 0);
+
+    glTexCoord2f(1, 0);
+    glVertex3f(1, 1, 0);
+    glTexCoord2f(1, 1);
+    glVertex3f(1, -1, 0);
+
+    glEnd();
     glfwSwapBuffers(window);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -110,20 +131,20 @@ void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, colo
 }
 
 void render() {
-  renderer->setCurrentColor(0xFF000000);
+  renderer->setCurrentColor({0, 0, 0, 1});
   renderer->clear();
 
-  renderer->setCurrentColor(0xFF00FF00);
+  renderer->setCurrentColor({0, 1, 0, 1});
   renderer->drawLine({0, 0}, {0, FB_HEIGHT - 1});
   renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
   renderer->drawLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
   renderer->drawLine({FB_WIDTH - 1, 0}, {0, 0});
 
-  renderer->setCurrentColor(0xFFFF0000);
+  renderer->setCurrentColor({1, 0, 0, 1});
   renderer->drawLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
   renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
 
-  renderer->setCurrentColor(0xFFFFFF00);
+  renderer->setCurrentColor({1, 1, 0, 1});
 
   for (int i = 0; i < 3000; i++) {
 //  if (frame % 300 == 0) {
@@ -133,7 +154,7 @@ void render() {
 
 //  }
 
-    drawTri(a, b, c, rand());
+    drawTri(a, b, c, {rand() % 256 / 256.f, rand() % 256 / 256.f, rand() % 256 / 256.f, 1});
   }
 
 //  drawTri(
@@ -157,28 +178,4 @@ void render() {
 //    {174, 140},
 //    0xFFFFFFFF
 //  );
-
-
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-               renderer->getWidth(), renderer->getHeight(),
-               0, GL_RGBA, GL_UNSIGNED_BYTE,
-               renderer->getFramebuffer());
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glBegin(GL_QUADS);
-
-  glColor4f(1, 1, 1, 1);
-
-  glTexCoord2f(0, 1);
-  glVertex3f(-1, -1, 0);
-  glTexCoord2f(0, 0);
-  glVertex3f(-1, 1, 0);
-
-  glTexCoord2f(1, 0);
-  glVertex3f(1, 1, 0);
-  glTexCoord2f(1, 1);
-  glVertex3f(1, -1, 0);
-
-  glEnd();
 }

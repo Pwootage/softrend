@@ -28,7 +28,7 @@ const framebuffer_t *SoftwareRasterizer::getFramebuffer() const {
   return framebuffer;
 }
 
-inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, color_t rgba) {
+inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, const color_t &rgba) {
 //  assert(pos.x >= 0);
 //  assert(pos.y >= 0);
 //  if (pos.x < 0 || pos.y < 0) {
@@ -37,7 +37,7 @@ inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, color_t rgba) {
   this->framebuffer[pos.x + pos.y * width] = rgba;
 }
 
-inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, color_t rgba) {
+inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, const color_t &rgba) {
   this->framebuffer[idx] = rgba;
 }
 

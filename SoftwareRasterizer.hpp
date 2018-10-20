@@ -3,8 +3,10 @@
 
 #include <cstdint>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
-using color_t = uint32_t;
+using color_t = glm::vec4;
 using framebuffer_t = color_t;
 using fb_pos_t = int32_t;
 
@@ -23,8 +25,8 @@ public:
     void setCurrentColor(color_t currentColor);
 
     // Methods
-    void drawPixel(const glm::ivec2 &pos, color_t rgba);
-    void drawPixel(fb_pos_t index, color_t rgba);
+    void drawPixel(const glm::ivec2 &pos, const color_t &rgba);
+    void drawPixel(fb_pos_t index, const color_t &rgba);
     void clear();
     void drawLine(const glm::ivec2 &a, const glm::ivec2 &b);
     void drawTriLines(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c);
