@@ -17,8 +17,10 @@ void errorCallback(int error, const char *description) {
   cerr << "Error " << error << ": " << description << endl;
 }
 
-constexpr int FB_WIDTH = 512;
-constexpr int FB_HEIGHT = 512;
+//constexpr int FB_WIDTH = 512;
+//constexpr int FB_HEIGHT = 512;
+constexpr int FB_WIDTH = 128;
+constexpr int FB_HEIGHT = 128;
 
 GLuint texID;
 SoftwareRasterizer *renderer;
@@ -91,7 +93,7 @@ int main() {
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  renderer->getWidth(), renderer->getHeight(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 0, GL_RGBA, GL_FLOAT,
                  renderer->getFramebuffer());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,35 +133,36 @@ void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, colo
 }
 
 void render() {
-  renderer->setCurrentColor({0, 0, 0, 255});
-  renderer->clear();
-
-  renderer->setCurrentColor({0, 255, 0, 255});
-  renderer->drawLine({0, 0}, {0, FB_HEIGHT - 1});
-  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-  renderer->drawLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
-  renderer->drawLine({FB_WIDTH - 1, 0}, {0, 0});
-
-  renderer->setCurrentColor({255, 0, 0, 255});
-  renderer->drawLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
-
-  renderer->setCurrentColor({255, 255, 0, 255});
+  renderer->setCurrentColor({1, 1, 0, 1});
 
   for (int i = 0; i < 3000; i++) {
 //  if (frame % 300 == 0) {
-    a = {rand() % FB_WIDTH - 100, rand() % FB_HEIGHT};
+    a = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
     b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
     c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
 
 //  }
 
     drawTri(a, b, c, {
-      (uint8_t)(rand() % 256),
-      (uint8_t)(rand() % 256),
-      (uint8_t)(rand() % 256),
-      255});
+      rand() % 256 / 256.f,
+      rand() % 256 / 256.f,
+      rand() % 256 / 256.f,
+      1
+    });
   }
+
+//  renderer->setCurrentColor({0, 0, 0, 1});
+//  renderer->clear();
+
+  renderer->setCurrentColor({0, 1, 0, 1});
+  renderer->drawLine({0, 0}, {0, FB_HEIGHT - 1});
+  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
+  renderer->drawLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
+  renderer->drawLine({FB_WIDTH - 1, 0}, {0, 0});
+
+  renderer->setCurrentColor({1, 0, 0, 1});
+  renderer->drawLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
+  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
 
 //  drawTri(
 //    {0, 0},

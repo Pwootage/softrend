@@ -7,32 +7,12 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_precision.hpp>
 
-using color_t = glm::u8vec4;
-//struct alignas(4) color_t {
-//  uint8_t r;
-//  uint8_t g;
-//  uint8_t b;
-//  uint8_t a;
-//};
-
-//struct alignas(4) color_t {
-//    inline color_t(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : color(r, g, b, a) {
-//    }
-//    inline color_t() : color_t(0,0,0,0) {
-//    }
-//
-//    union {
-//        uint32_t align;
-//        glm::u8vec4 color;
-//    };
-//};
-//
-//struct alignas(4) framebuffer_t {
-//    union {
-//        uint32_t align;
-//        glm::u8vec4 color;
-//    };
-//};
+#define F32_COLOR
+#ifdef F32_COLOR
+using color_t = glm::f32vec4;
+#else
+using color_t = glm::vec<4, uint8_t, glm::aligned_lowp>;
+#endif
 
 using framebuffer_t = color_t;
 using fb_pos_t = int32_t;

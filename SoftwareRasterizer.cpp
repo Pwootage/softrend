@@ -14,7 +14,7 @@ using namespace glm;
 
 SoftwareRasterizer::SoftwareRasterizer(int width, int height) : width(width), height(height), widthMax(width - 1),
                                                                 heightMax(height - 1) {
-  cout << sizeof(color_t);
+  cout << sizeof(color_t::data);
 
   this->framebuffer = static_cast<framebuffer_t *>(malloc(sizeof(framebuffer_t) * width * height));
 }
@@ -33,8 +33,23 @@ const framebuffer_t *SoftwareRasterizer::getFramebuffer() const {
 
 inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, const color_t &rgba) {
 //  this->framebuffer[idx].align = rgba.align;
+// we take a block here depending on what's defined
+#ifdef F32_COLOR
+  *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
+#else
   *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
+#endif
+//  if (sizeof(color_t::data) == 4) {
+//    *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
+//  } else if (sizeof(color_t::data) == 16) {
+//    *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
+//  } else {
+//    this->framebuffer[idx] = rgba;
+//  }
+//  *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
 //  memcpy(&this->framebuffer[idx], &rgba, sizeof(color_t));
+//  this->framebuffer[idx] = rgba;
+
 }
 
 inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, const color_t &rgba) {
@@ -44,9 +59,9 @@ inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, const color_t &rgba)
 #define DRAW_PIXEL(idx, color) ()
 
 void SoftwareRasterizer::clear() {
-  for (fb_pos_t y = 0; y < this->getWidth(); y++) {
+  for (fb_pos_t y = 0; y < height; y++) {
     fb_pos_t yOff = y * width;
-    for (fb_pos_t x = 0; x < this->getWidth(); x++) {
+    for (fb_pos_t x = 0; x < width; x++) {
       this->drawPixel(x + yOff, this->currentColor);
     }
   }
