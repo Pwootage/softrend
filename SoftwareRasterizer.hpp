@@ -5,8 +5,35 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/gtc/type_precision.hpp>
 
-using color_t = glm::vec4;
+using color_t = glm::u8vec4;
+//struct alignas(4) color_t {
+//  uint8_t r;
+//  uint8_t g;
+//  uint8_t b;
+//  uint8_t a;
+//};
+
+//struct alignas(4) color_t {
+//    inline color_t(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : color(r, g, b, a) {
+//    }
+//    inline color_t() : color_t(0,0,0,0) {
+//    }
+//
+//    union {
+//        uint32_t align;
+//        glm::u8vec4 color;
+//    };
+//};
+//
+//struct alignas(4) framebuffer_t {
+//    union {
+//        uint32_t align;
+//        glm::u8vec4 color;
+//    };
+//};
+
 using framebuffer_t = color_t;
 using fb_pos_t = int32_t;
 

@@ -5,6 +5,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_integer.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/simd/common.h>
 
 #include "SoftwareRasterizer.hpp"
 
@@ -13,7 +14,9 @@ using namespace glm;
 
 SoftwareRasterizer::SoftwareRasterizer(int width, int height) : width(width), height(height), widthMax(width - 1),
                                                                 heightMax(height - 1) {
-  this->framebuffer = new framebuffer_t[width * height];
+  cout << sizeof(color_t);
+
+  this->framebuffer = static_cast<framebuffer_t *>(malloc(sizeof(framebuffer_t) * width * height));
 }
 
 int SoftwareRasterizer::getWidth() const {
@@ -28,18 +31,17 @@ const framebuffer_t *SoftwareRasterizer::getFramebuffer() const {
   return framebuffer;
 }
 
-inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, const color_t &rgba) {
-//  assert(pos.x >= 0);
-//  assert(pos.y >= 0);
-//  if (pos.x < 0 || pos.y < 0) {
-//    cout << "UHH" << endl;
-//  }
-  this->framebuffer[pos.x + pos.y * width] = rgba;
+inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, const color_t &rgba) {
+//  this->framebuffer[idx].align = rgba.align;
+  *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
+//  memcpy(&this->framebuffer[idx], &rgba, sizeof(color_t));
 }
 
-inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, const color_t &rgba) {
-  this->framebuffer[idx] = rgba;
+inline void SoftwareRasterizer::drawPixel(const ivec2 &pos, const color_t &rgba) {
+  drawPixel(pos.x + pos.y * width, rgba);
 }
+
+#define DRAW_PIXEL(idx, color) ()
 
 void SoftwareRasterizer::clear() {
   for (fb_pos_t y = 0; y < this->getWidth(); y++) {
@@ -160,10 +162,6 @@ void SoftwareRasterizer::drawTriLines(const glm::ivec2 &a, const glm::ivec2 &b, 
   this->drawLine(c, a);
 }
 
-inline float vecSign(ivec2 a, ivec2 b, ivec2 c) {
-  return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y);
-}
-
 void SoftwareRasterizer::drawTriFilled(glm::ivec2 a, glm::ivec2 b, glm::ivec2 c) {
   // Sort our tris by y-coord
   if (a.y > b.y) swap(a, b);
@@ -175,7 +173,6 @@ void SoftwareRasterizer::drawTriFilled(glm::ivec2 a, glm::ivec2 b, glm::ivec2 c)
   if (totalHeight == 0) {
     return; // can't draw nuthin
   }
-
   // bottom half
   fb_pos_t y0 = glm::clamp(a.y, 0, heightMax),
     y1 = glm::clamp(b.y, 0, heightMax),
@@ -189,8 +186,8 @@ void SoftwareRasterizer::drawTriFilled(glm::ivec2 a, glm::ivec2 b, glm::ivec2 c)
     float x1 = a.x;
     for (fb_pos_t y = y0; y <= y1; y++) {
       fb_pos_t yOff = y * width;
-      fb_pos_t startX = glm::clamp((fb_pos_t)x0, 0, widthMax);
-      fb_pos_t endX = glm::clamp((fb_pos_t)x1, 0, widthMax);
+      fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
+      fb_pos_t endX = glm::clamp((fb_pos_t) x1, 0, widthMax);
       for (fb_pos_t x = startX; x < endX; x++) {
         drawPixel(x + yOff, currentColor);
       }
@@ -209,8 +206,8 @@ void SoftwareRasterizer::drawTriFilled(glm::ivec2 a, glm::ivec2 b, glm::ivec2 c)
     float x1 = c.x;
     for (fb_pos_t y = y2; y > y1; y--) {
       fb_pos_t yOff = y * width;
-      fb_pos_t startX = glm::clamp((fb_pos_t)x0, 0, widthMax);
-      fb_pos_t endX = glm::clamp((fb_pos_t)x1, 0, widthMax);
+      fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
+      fb_pos_t endX = glm::clamp((fb_pos_t) x1, 0, widthMax);
       for (fb_pos_t x = startX; x < endX; x++) {
         drawPixel(x + yOff, currentColor);
       }

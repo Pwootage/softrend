@@ -91,7 +91,7 @@ int main() {
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  renderer->getWidth(), renderer->getHeight(),
-                 0, GL_RGBA, GL_FLOAT,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  renderer->getFramebuffer());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,20 +131,20 @@ void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, colo
 }
 
 void render() {
-  renderer->setCurrentColor({0, 0, 0, 1});
+  renderer->setCurrentColor({0, 0, 0, 255});
   renderer->clear();
 
-  renderer->setCurrentColor({0, 1, 0, 1});
+  renderer->setCurrentColor({0, 255, 0, 255});
   renderer->drawLine({0, 0}, {0, FB_HEIGHT - 1});
   renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
   renderer->drawLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
   renderer->drawLine({FB_WIDTH - 1, 0}, {0, 0});
 
-  renderer->setCurrentColor({1, 0, 0, 1});
+  renderer->setCurrentColor({255, 0, 0, 255});
   renderer->drawLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
   renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
 
-  renderer->setCurrentColor({1, 1, 0, 1});
+  renderer->setCurrentColor({255, 255, 0, 255});
 
   for (int i = 0; i < 3000; i++) {
 //  if (frame % 300 == 0) {
@@ -154,7 +154,11 @@ void render() {
 
 //  }
 
-    drawTri(a, b, c, {rand() % 256 / 256.f, rand() % 256 / 256.f, rand() % 256 / 256.f, 1});
+    drawTri(a, b, c, {
+      (uint8_t)(rand() % 256),
+      (uint8_t)(rand() % 256),
+      (uint8_t)(rand() % 256),
+      255});
   }
 
 //  drawTri(
