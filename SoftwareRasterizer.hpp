@@ -28,18 +28,19 @@ public:
     void clear();
     void drawLine(const glm::ivec2 &a, const glm::ivec2 &b);
     void drawTriLines(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c);
-    void drawTriFilled(const glm::ivec2 &aIn, const glm::ivec2 &bIn, const glm::ivec2 &cIn);
+    void drawTriFilled(glm::ivec2 aIn, glm::ivec2 bIn, glm::ivec2 cIn);
 
 private:
     color_t currentColor;
     int width;
     int height;
+    int widthMax;
+    int heightMax;
     framebuffer_t *framebuffer;
 
     // Helpers
     void drawLineLow(fb_pos_t x0, fb_pos_t y0, fb_pos_t x1, fb_pos_t y1);
     void drawLineHigh(fb_pos_t x0, fb_pos_t y0, fb_pos_t x1, fb_pos_t y1);
-    void fillTriTop(const glm::ivec2 &tvec2, const glm::ivec2 &tvec21, const glm::ivec2 &tvec22);
 };
 
 

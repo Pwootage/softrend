@@ -82,7 +82,7 @@ int main() {
       auto time = chrono::duration<double, milli>(endT - startT).count();
       frameTimes[frame % FRAME_AVG_COUNT] = time;
     }
-    auto avg = accumulate(begin(frameTimes), end(frameTimes), 0.0) / (double)FRAME_AVG_COUNT;
+    auto avg = accumulate(begin(frameTimes), end(frameTimes), 0.0) / (double) FRAME_AVG_COUNT;
     stringstream title;
     title << "softrend " << fixed << setprecision(2) << avg << " ms " << frame;
     string titleS = title.str();
@@ -101,6 +101,14 @@ int main() {
   return 0;
 }
 
+void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, color_t color) {
+  renderer->setCurrentColor(color);
+  renderer->drawTriFilled(a, b, c);
+
+//  renderer->setCurrentColor(0xFF0000FF);
+//  renderer->drawTriLines(a, b, c);
+}
+
 void render() {
   renderer->setCurrentColor(0xFF000000);
   renderer->clear();
@@ -117,19 +125,40 @@ void render() {
 
   renderer->setCurrentColor(0xFFFFFF00);
 
-  for (int i = 0; i < 50; i++) {
-    //  if (frame % 30 == 0) {
+  for (int i = 0; i < 3000; i++) {
+//  if (frame % 300 == 0) {
     a = {rand() % FB_WIDTH - 100, rand() % FB_HEIGHT};
     b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
     c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
+
 //  }
 
-    renderer->setCurrentColor(0xFF00FFFF);
-    renderer->drawTriFilled(a, b, c);
-
-    renderer->setCurrentColor(0xFF0000FF);
-    renderer->drawTriLines(a, b, c);
+    drawTri(a, b, c, rand());
   }
+
+//  drawTri(
+//    {0, 0},
+//    {0, 100},
+//    {100, 0},
+//    0xFF00FFFF
+//  );
+//
+//  drawTri(
+//    {FB_WIDTH - 1, FB_HEIGHT - 1},
+//    {FB_WIDTH - 1, FB_HEIGHT - 101},
+//    {FB_WIDTH - 101, FB_HEIGHT - 1},
+//    0xFFFF00FF
+//  );
+//
+//
+//  drawTri(
+//    {100, 100},
+//    {150, 192},
+//    {174, 140},
+//    0xFFFFFFFF
+//  );
+
+
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                renderer->getWidth(), renderer->getHeight(),
@@ -141,14 +170,14 @@ void render() {
 
   glColor4f(1, 1, 1, 1);
 
-  glTexCoord2f(0, 0);
-  glVertex3f(-1, -1, 0);
   glTexCoord2f(0, 1);
+  glVertex3f(-1, -1, 0);
+  glTexCoord2f(0, 0);
   glVertex3f(-1, 1, 0);
 
-  glTexCoord2f(1, 1);
-  glVertex3f(1, 1, 0);
   glTexCoord2f(1, 0);
+  glVertex3f(1, 1, 0);
+  glTexCoord2f(1, 1);
   glVertex3f(1, -1, 0);
 
   glEnd();
