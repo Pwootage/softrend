@@ -17,7 +17,7 @@ set(SOURCE_FILES
         main.cpp)
 
 set(HEADER_FILES
-        SoftwareRasterizer.hpp)
+        SoftwareRasterizer.hpp shader/VertexShader.h)
 
 add_executable(softrend ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
 

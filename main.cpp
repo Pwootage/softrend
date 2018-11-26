@@ -9,6 +9,8 @@
 #include <iomanip>
 #include "SoftwareRasterizer.hpp"
 
+#include <glm/gtx/transform.hpp>
+
 using namespace std;
 
 void render();
@@ -26,6 +28,8 @@ GLuint texID;
 SoftwareRasterizer *renderer;
 uint64_t frame = 0;
 glm::ivec2 a, b, c;
+
+using namespace glm;
 
 int main() {
   glfwSetErrorCallback(errorCallback);
@@ -71,7 +75,7 @@ int main() {
   for (int i = 0; i < FRAME_AVG_COUNT; i++) {
     frameTimes[i] = 1;
   }
-  glfwSwapInterval(0);
+  glfwSwapInterval(1);
   while (!glfwWindowShouldClose(window)) {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -126,63 +130,98 @@ int main() {
 
 void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, color_t color) {
   renderer->setCurrentColor(color);
-  renderer->drawTriFilled(a, b, c);
+  renderer->drawScreenSpaceTriFilled(a, b, c);
 
 //  renderer->setCurrentColor(0xFF0000FF);
-//  renderer->drawTriLines(a, b, c);
+//  renderer->drawScreenSpaceTriLines(a, b, c);
 }
 
 void render() {
-  renderer->setCurrentColor({1, 1, 0, 1});
-
-  for (int i = 0; i < 3000; i++) {
-//  if (frame % 300 == 0) {
-    a = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-    b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-    c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-
-//  }
-
-    drawTri(a, b, c, {
-      rand() % 256 / 256.f,
-      rand() % 256 / 256.f,
-      rand() % 256 / 256.f,
-      1
-    });
-  }
-
-//  renderer->setCurrentColor({0, 0, 0, 1});
-//  renderer->clear();
-
-  renderer->setCurrentColor({0, 1, 0, 1});
-  renderer->drawLine({0, 0}, {0, FB_HEIGHT - 1});
-  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-  renderer->drawLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
-  renderer->drawLine({FB_WIDTH - 1, 0}, {0, 0});
+  renderer->setCurrentColor({0, 0, 0, 1});
+  renderer->clear();
 
   renderer->setCurrentColor({1, 0, 0, 1});
-  renderer->drawLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-  renderer->drawLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
 
-//  drawTri(
-//    {0, 0},
-//    {0, 100},
-//    {100, 0},
-//    0xFF00FFFF
-//  );
+  vec3 tri[] = {
+    {0,    0.5,  0},
+    {-0.5, -0.5, 0},
+    {0.5,  -0.5, 0}
+  };
+
+  mat4 rotation = glm::rotate(
+    (float) (frame) / 100.f,
+    vec3{0.f, 0.1f, 1.f}
+  );
+  rotation *= glm::rotate(
+    (float) (frame) / 100.f,
+    vec3{0.f, 1.f, 0.f}
+  );
+
+
+  vec4 clipSpace[3];
+  // convert to clip space by hand for now
+
+  for (int i = 0; i < 3; i++) {
+    clipSpace[i] = vec4{tri[i], 1} * rotation;
+  }
+
+  renderer->drawClipSpaceTriangle(
+    clipSpace[0],
+    clipSpace[1],
+    clipSpace[2]
+  );
+
+
+//  renderer->setCurrentColor({1, 1, 0, 1});
+
+//  for (int i = 0; i < 3000; i++) {
+////  if (frame % 300 == 0) {
+//    a = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
+//    b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
+//    c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
 //
-//  drawTri(
-//    {FB_WIDTH - 1, FB_HEIGHT - 1},
-//    {FB_WIDTH - 1, FB_HEIGHT - 101},
-//    {FB_WIDTH - 101, FB_HEIGHT - 1},
-//    0xFFFF00FF
-//  );
+////  }
 //
+//    drawTri(a, b, c, {
+//      rand() % 256 / 256.f,
+//      rand() % 256 / 256.f,
+//      rand() % 256 / 256.f,
+//      1
+//    });
+//  }
 //
-//  drawTri(
-//    {100, 100},
-//    {150, 192},
-//    {174, 140},
-//    0xFFFFFFFF
-//  );
+////  renderer->setCurrentColor({0, 0, 0, 1});
+////  renderer->clear();
+//
+//  renderer->setCurrentColor({0, 1, 0, 1});
+//  renderer->drawScreenSpaceLine({0, 0}, {0, FB_HEIGHT - 1});
+//  renderer->drawScreenSpaceLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
+//  renderer->drawScreenSpaceLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
+//  renderer->drawScreenSpaceLine({FB_WIDTH - 1, 0}, {0, 0});
+//
+//  renderer->setCurrentColor({1, 0, 0, 1});
+//  renderer->drawScreenSpaceLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
+//  renderer->drawScreenSpaceLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
+//
+////  drawTri(
+////    {0, 0},
+////    {0, 100},
+////    {100, 0},
+////    0xFF00FFFF
+////  );
+////
+////  drawTri(
+////    {FB_WIDTH - 1, FB_HEIGHT - 1},
+////    {FB_WIDTH - 1, FB_HEIGHT - 101},
+////    {FB_WIDTH - 101, FB_HEIGHT - 1},
+////    0xFFFF00FF
+////  );
+////
+////
+////  drawTri(
+////    {100, 100},
+////    {150, 192},
+////    {174, 140},
+////    0xFFFFFFFF
+////  );
 }
