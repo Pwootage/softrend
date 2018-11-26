@@ -33,6 +33,7 @@ const framebuffer_t *SoftwareRasterizer::getFramebuffer() const {
 
 inline void SoftwareRasterizer::drawPixel(fb_pos_t idx, const color_t &rgba) {
 //  this->framebuffer[idx].align = rgba.align;
+//  this->framebuffer[idx] = rgba;
 // we take a block here depending on what's defined
 #ifdef F32_COLOR
   *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
@@ -119,8 +120,8 @@ inline void SoftwareRasterizer::drawLineHigh(fb_pos_t x0, fb_pos_t y0, fb_pos_t 
 
 void SoftwareRasterizer::drawLine(const glm::ivec2 &a, const glm::ivec2 &b) {
   fb_pos_t
-    x0 = a.x, y0 = a.y,
-    x1 = b.x, y1 = b.y;
+      x0 = a.x, y0 = a.y,
+      x1 = b.x, y1 = b.y;
 
   // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
   if (x0 == x1) {
@@ -190,8 +191,8 @@ void SoftwareRasterizer::drawTriFilled(glm::ivec2 a, glm::ivec2 b, glm::ivec2 c)
   }
   // bottom half
   fb_pos_t y0 = glm::clamp(a.y, 0, heightMax),
-    y1 = glm::clamp(b.y, 0, heightMax),
-    y2 = glm::clamp(c.y, 0, heightMax);
+      y1 = glm::clamp(b.y, 0, heightMax),
+      y2 = glm::clamp(c.y, 0, heightMax);
   { // top
     float invSlopeA = (float) (b.x - a.x) / (float) (b.y - a.y);
     float invSlopeB = (float) (c.x - a.x) / (float) (c.y - a.y);

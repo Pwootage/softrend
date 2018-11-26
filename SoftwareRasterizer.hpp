@@ -1,17 +1,20 @@
 #ifndef SOFTREND_SOFTRENDERER_HPP
 #define SOFTREND_SOFTRENDERER_HPP
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <cstdint>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_precision.hpp>
+#include <glm/gtx/type_aligned.hpp>
 
 #define F32_COLOR
 #ifdef F32_COLOR
-using color_t = glm::f32vec4;
+using color_t = glm::aligned_f32vec4;
 #else
-using color_t = glm::vec<4, uint8_t, glm::aligned_lowp>;
+using color_t = glm::aligned_u8vec4;
 #endif
 
 using framebuffer_t = color_t;
