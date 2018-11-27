@@ -7,6 +7,7 @@
 #include <numeric>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 #include "SoftwareRasterizer.hpp"
 
 #include <glm/gtx/transform.hpp>
@@ -142,34 +143,56 @@ void render() {
 
   renderer->setCurrentColor({1, 0, 0, 1});
 
-  vec3 tri[] = {
-    {0,    0.5,  0},
-    {-0.5, -0.5, 0},
-    {0.5,  -0.5, 0}
+  vec3 ftr{1, 1, 1};
+  vec3 ftl{-1, 1, 1};
+  vec3 fbr{1, -1, 1};
+  vec3 fbl{-1, -1, 1};
+  vec3 btr{1, 1, -1};
+  vec3 btl{-1, 1, -1};
+  vec3 bbr{1, -1, -1};
+  vec3 bbl{-1, -1, -1};
+
+  vector<vec3> tris{
+    // front
+    ftr, ftl, fbl,
+    fbl, fbr, ftr,
+    //back
+    btr, btl, bbl,
+    bbl, bbr, btr
   };
 
-  mat4 rotation = glm::rotate(
-    (float) (frame) / 100.f,
-    vec3{0.f, 0.1f, 1.f}
-  );
-  rotation *= glm::rotate(
-    (float) (frame) / 100.f,
-    vec3{0.f, 1.f, 0.f}
+  mat4 proj = perspectiveFov(
+    45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
   );
 
+  float yaw = (frame) / 200.f;
+  float pitch = sin((frame) / 400.f);
+  float dist = 10;
 
-  vec4 clipSpace[3];
+  mat4 view = lookAt(
+    vec3{cos(pitch) * sin(yaw), sin(pitch), cos(pitch) * cos(yaw)} * dist, //eye
+    vec3{0, 0, 0},// center,
+    vec3{0, 1, 0}//up
+  );
+
+  mat4 model(1);
+
+  vector<vec4> clipSpace;
+  clipSpace.reserve(tris.size());
+
   // convert to clip space by hand for now
-
-  for (int i = 0; i < 3; i++) {
-    clipSpace[i] = vec4{tri[i], 1} * rotation;
+  for (int i = 0; i < tris.size(); i++) {
+    clipSpace[i] = proj * view * model * vec4{tris[i], 1};
   }
 
-  renderer->drawClipSpaceTriangle(
-    clipSpace[0],
-    clipSpace[1],
-    clipSpace[2]
-  );
+  for (int i = 0; i < tris.size(); i += 3) {
+    renderer->drawClipSpaceTriangle(
+      clipSpace[i + 0],
+      clipSpace[i + 1],
+      clipSpace[i + 2]
+    );
+  }
+
 
 
 //  renderer->setCurrentColor({1, 1, 0, 1});
