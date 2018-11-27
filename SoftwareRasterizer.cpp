@@ -300,14 +300,14 @@ void SoftwareRasterizer::drawClipSpaceTriangle(const glm::vec4 &a, const glm::ve
   float halfH = height / 2.f;
 
   // NDC
-  vec3 aa = a / a.w;
-  vec3 bb = b / b.w;
-  vec3 cc = c / c.w;
+//  vec3 aa = a / a.w;
+//  vec3 bb = b / b.w;
+//  vec3 cc = c / c.w;
 
   // screen-space
-  ivec2 ai = {(aa.x + 1.f) * halfW, (aa.y + 1.f) * halfH};
-  ivec2 bi = {(bb.x + 1.f) * halfW, (bb.y + 1.f) * halfH};
-  ivec2 ci = {(cc.x + 1.f) * halfW, (cc.y + 1.f) * halfH};
+  ivec2 ai = {(a.x / a.w + 1.f) * halfW, (a.y / a.w + 1.f) * halfH};
+  ivec2 bi = {(b.x / b.w + 1.f) * halfW, (b.y / a.w + 1.f) * halfH};
+  ivec2 ci = {(c.x / c.w + 1.f) * halfW, (c.y / a.w + 1.f) * halfH};
 
 //  cout << to_string(a) << "->" << to_string(ai) << endl;
 //  cout << to_string(b) << "->" << to_string(bi) << endl;
