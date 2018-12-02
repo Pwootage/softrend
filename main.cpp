@@ -14,6 +14,10 @@
 
 #include <glm/gtx/transform.hpp>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+
+#include "src/tiny_obj_loader.h"
+
 using namespace std;
 
 void render();
@@ -22,19 +26,29 @@ void errorCallback(int error, const char *description) {
   cerr << "Error " << error << ": " << description << endl;
 }
 
+constexpr int FB_WIDTH = 1024;
+constexpr int FB_HEIGHT = 1024;
 //constexpr int FB_WIDTH = 512;
 //constexpr int FB_HEIGHT = 512;
-constexpr int FB_WIDTH = 128;
-constexpr int FB_HEIGHT = 128;
+//constexpr int FB_WIDTH = 128;
+//constexpr int FB_HEIGHT = 128;
 
 GLuint texID;
 SoftwareRasterizer *renderer;
 uint64_t frame = 0;
 glm::ivec2 a, b, c;
 
+// the teapot
+VertexBuffer<glm::vec3> teapotVerts;
+IndexBuffer teapotIndicies;
+
 using namespace glm;
 
+void loadTeapot();
+
 int main() {
+  loadTeapot();
+
   glfwSetErrorCallback(errorCallback);
 
   if (!glfwInit()) {
@@ -131,31 +145,25 @@ int main() {
   return 0;
 }
 
-void drawTri(const glm::ivec2 &a, const glm::ivec2 &b, const glm::ivec2 &c, color_t color) {
-  renderer->setCurrentColor(color);
-  renderer->drawScreenSpaceTriFilled(a, b, c);
-
-//  renderer->setCurrentColor(0xFF0000FF);
-//  renderer->drawScreenSpaceTriLines(a, b, c);
-}
-
 void render() {
   renderer->setCurrentColor({0, 0, 0, 1});
   renderer->clear();
 
   // matricies
+  float yaw = (frame) / 200.f;
+  float pitch = sin((frame) / 400.f);
+  float dist = 50;
+
   mat4 proj = perspectiveFov(
     45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
   );
 
-  float yaw = (frame) / 200.f;
-  float pitch = sin((frame) / 400.f);
-  float dist = 10;
+//  mat4 proj = ortho(-dist, dist, -dist, dist, 0.1f, 1000.f);
 
   mat4 view = lookAt(
-    vec3{cos(pitch) * sin(yaw), sin(pitch), cos(pitch) * cos(yaw)} * dist, //eye
+    vec3{cos(pitch) * sin(yaw), cos(pitch) * cos(yaw), sin(pitch)} * dist, //eye
     vec3{0, 0, 0},// center,
-    vec3{0, 1, 0}//up
+    vec3{0, 0, -1}//up
   );
 
   mat4 model(1);
@@ -194,68 +202,66 @@ void render() {
   // convert to clip space by hand for now
   mat4 mult = proj * view * model;
   vector<vec4> clipSpace;
-  clipSpace.reserve(verts.size());
-  for (int i = 0; i < verts.size(); i++) {
-    clipSpace[i] = mult * vec4{verts[i], 1};
+//  clipSpace.resize(verts.size());
+//  for (int i = 0; i < verts.size(); i++) {
+//    clipSpace[i] = mult * vec4{verts[i], 1};
+//  }
+//
+//  renderer->setCurrentColor({1, 0, 0, 1});
+//  renderer->drawClipSpaceIndexed(
+//    SoftwareRasterizer::DrawMode::TRAINGLES,
+//    clipSpace,
+//    indicies
+//  );
+
+  clipSpace.resize(teapotVerts.size());
+  for (int i = 0; i < teapotVerts.size(); i++) {
+    clipSpace[i] = mult * vec4{teapotVerts[i], 1};
   }
 
-  renderer->setCurrentColor({1, 0, 0, 1});
+  renderer->setCurrentColor({0, 1, 0, 1});
   renderer->drawClipSpaceIndexed(
     SoftwareRasterizer::DrawMode::TRAINGLES,
     clipSpace,
-    indicies
+    teapotIndicies
   );
+}
 
-//  renderer->setCurrentColor({1, 1, 0, 1});
+void loadTeapot() {
+//  string inputfile = "models/teapot.obj";
+  string inputfile = "models/teapot-low.obj";
+  string error;
+  tinyobj::attrib_t attrib;
+  std::vector<tinyobj::shape_t> shapes;
+  std::vector<tinyobj::material_t> materials;
+  if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, inputfile.c_str(), nullptr, true)) {
+    cerr << error << endl;
+    exit(1);
+  }
 
-//  for (int i = 0; i < 3000; i++) {
-////  if (frame % 300 == 0) {
-//    a = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-//    b = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-//    c = {rand() % FB_WIDTH, rand() % FB_HEIGHT};
-//
-////  }
-//
-//    drawTri(a, b, c, {
-//      rand() % 256 / 256.f,
-//      rand() % 256 / 256.f,
-//      rand() % 256 / 256.f,
-//      1
-//    });
-//  }
-//
-////  renderer->setCurrentColor({0, 0, 0, 1});
-////  renderer->clear();
-//
-//  renderer->setCurrentColor({0, 1, 0, 1});
-//  renderer->drawScreenSpaceLine({0, 0}, {0, FB_HEIGHT - 1});
-//  renderer->drawScreenSpaceLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-//  renderer->drawScreenSpaceLine({FB_WIDTH - 1, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
-//  renderer->drawScreenSpaceLine({FB_WIDTH - 1, 0}, {0, 0});
-//
-//  renderer->setCurrentColor({1, 0, 0, 1});
-//  renderer->drawScreenSpaceLine({0, 0}, {FB_WIDTH - 1, FB_HEIGHT - 1});
-//  renderer->drawScreenSpaceLine({0, FB_HEIGHT - 1}, {FB_WIDTH - 1, 0});
-//
-////  drawTri(
-////    {0, 0},
-////    {0, 100},
-////    {100, 0},
-////    0xFF00FFFF
-////  );
-////
-////  drawTri(
-////    {FB_WIDTH - 1, FB_HEIGHT - 1},
-////    {FB_WIDTH - 1, FB_HEIGHT - 101},
-////    {FB_WIDTH - 101, FB_HEIGHT - 1},
-////    0xFFFF00FF
-////  );
-////
-////
-////  drawTri(
-////    {100, 100},
-////    {150, 192},
-////    {174, 140},
-////    0xFFFFFFFF
-////  );
+  if (!error.empty()) {
+    cerr << error << endl;
+  }
+
+  teapotVerts.resize(attrib.vertices.size() / 3);
+  for (size_t i = 0, end = attrib.vertices.size() / 3; i < end; i++) {
+    teapotVerts[i] = {
+      attrib.vertices[3 * i + 0],
+      attrib.vertices[3 * i + 1],
+      attrib.vertices[3 * i + 2]
+    };
+  }
+
+  for (auto shape_iter = shapes.cbegin(), end = shapes.cend(); shape_iter < end; shape_iter++) {
+    auto shape = *shape_iter;
+    auto offset = teapotIndicies.size();
+    teapotIndicies.resize(teapotIndicies.size() + shape.mesh.indices.size());
+
+    for (int i = 0, end = shape.mesh.indices.size(); i < end; i++) {
+      auto index = shape.mesh.indices[i];
+      teapotIndicies[offset + i] = index.vertex_index;
+    }
+  }
+
+  cout << "Loaded " << teapotVerts.size() << " verts, " << teapotIndicies.size() << " indicies" << endl;
 }
