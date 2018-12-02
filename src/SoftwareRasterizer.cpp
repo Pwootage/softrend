@@ -318,3 +318,43 @@ void SoftwareRasterizer::drawClipSpaceTriangle(const glm::vec4 &a, const glm::ve
 //  cout << endl;
 
 }
+
+void SoftwareRasterizer::drawClipSpaceIndexed(SoftwareRasterizer::DrawMode mode,
+                                              const VertexBuffer<glm::vec4> &verts,
+                                              const IndexBuffer &indicies) {
+  if (mode == SoftwareRasterizer::DrawMode::TRAINGLES) {
+    for (size_t i = 0, end = indicies.size(); i + 2 < end; i += 3) {
+      drawClipSpaceTriangle(
+        verts[indicies[i]],
+        verts[indicies[i + 1]],
+        verts[indicies[i + 2]]
+      );
+    }
+  } else if (mode == SoftwareRasterizer::DrawMode::TRIANGLE_STRIP) {
+    for (size_t i = 0, end = indicies.size(); i + 2 < end; i++) {
+
+      if (i % 2 == 0) {
+        drawClipSpaceTriangle(
+          verts[indicies[i]],
+          verts[indicies[i + 1]],
+          verts[indicies[i + 2]]
+        );
+      } else {
+        drawClipSpaceTriangle(
+          verts[indicies[i + 2]],
+          verts[indicies[i + 1]],
+          verts[indicies[i]]
+        );
+      }
+    }
+  } else if (mode == SoftwareRasterizer::DrawMode::TRIANGLE_FAN) {
+    for (size_t i = 1, end = indicies.size(); i + 1 < end; i++) {
+      drawClipSpaceTriangle(
+        verts[indicies[0]],
+        verts[indicies[i]],
+        verts[indicies[i + 1]]
+      );
+    }
+  }
+}
+

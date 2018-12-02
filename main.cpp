@@ -8,7 +8,9 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
-#include "SoftwareRasterizer.hpp"
+#include "src/SoftwareRasterizer.hpp"
+#include "src/buffers/VertexBuffer.hpp"
+#include "src/buffers/IndexBuffer.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -141,26 +143,7 @@ void render() {
   renderer->setCurrentColor({0, 0, 0, 1});
   renderer->clear();
 
-  renderer->setCurrentColor({1, 0, 0, 1});
-
-  vec3 ftr{1, 1, 1};
-  vec3 ftl{-1, 1, 1};
-  vec3 fbr{1, -1, 1};
-  vec3 fbl{-1, -1, 1};
-  vec3 btr{1, 1, -1};
-  vec3 btl{-1, 1, -1};
-  vec3 bbr{1, -1, -1};
-  vec3 bbl{-1, -1, -1};
-
-  vector<vec3> tris{
-    // front
-    ftr, ftl, fbl,
-    fbl, fbr, ftr,
-    //back
-    btr, btl, bbl,
-    bbl, bbr, btr
-  };
-
+  // matricies
   mat4 proj = perspectiveFov(
     45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
   );
@@ -177,23 +160,51 @@ void render() {
 
   mat4 model(1);
 
-  vector<vec4> clipSpace;
-  clipSpace.reserve(tris.size());
+  // verts/indicies
+  VertexBuffer<vec3> verts{
+    {1,  1,  1},
+    {-1, 1,  1},
+    {1,  -1, 1},
+    {-1, -1, 1},
+    {1,  1,  -1},
+    {-1, 1,  -1},
+    {1,  -1, -1},
+    {-1, -1, -1}
+  };
+
+  constexpr index_t
+    ftr = 0,
+    ftl = 1,
+    fbr = 2,
+    fbl = 3,
+    btr = 4,
+    btl = 5,
+    bbr = 6,
+    bbl = 7;
+
+  IndexBuffer indicies{
+    // front
+    ftr, ftl, fbl,
+    fbl, fbr, ftr,
+    //back
+    btr, btl, bbl,
+    bbl, bbr, btr
+  };
 
   // convert to clip space by hand for now
-  for (int i = 0; i < tris.size(); i++) {
-    clipSpace[i] = proj * view * model * vec4{tris[i], 1};
+  mat4 mult = proj * view * model;
+  vector<vec4> clipSpace;
+  clipSpace.reserve(verts.size());
+  for (int i = 0; i < verts.size(); i++) {
+    clipSpace[i] = mult * vec4{verts[i], 1};
   }
 
-  for (int i = 0; i < tris.size(); i += 3) {
-    renderer->drawClipSpaceTriangle(
-      clipSpace[i + 0],
-      clipSpace[i + 1],
-      clipSpace[i + 2]
-    );
-  }
-
-
+  renderer->setCurrentColor({1, 0, 0, 1});
+  renderer->drawClipSpaceIndexed(
+    SoftwareRasterizer::DrawMode::TRAINGLES,
+    clipSpace,
+    indicies
+  );
 
 //  renderer->setCurrentColor({1, 1, 0, 1});
 

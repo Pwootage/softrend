@@ -13,11 +13,14 @@ find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 
 set(SOURCE_FILES
-        SoftwareRasterizer.cpp
+        src/SoftwareRasterizer.cpp
         main.cpp)
 
 set(HEADER_FILES
-        SoftwareRasterizer.hpp shader/VertexShader.h)
+        src/SoftwareRasterizer.hpp
+        src/shader/VertexShader.hpp
+        src/buffers/VertexBuffer.hpp
+        src/buffers/IndexBuffer.hpp)
 
 add_executable(softrend ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
 

@@ -9,6 +9,8 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtx/type_aligned.hpp>
+#include "buffers/VertexBuffer.hpp"
+#include "buffers/IndexBuffer.hpp"
 
 #define F32_COLOR
 #ifdef F32_COLOR
@@ -22,6 +24,12 @@ using fb_pos_t = int32_t;
 
 class SoftwareRasterizer {
 public:
+
+    enum class DrawMode {
+        TRAINGLES,
+        TRIANGLE_STRIP,
+        TRIANGLE_FAN
+    };
 
     SoftwareRasterizer(int width, int height);
 
@@ -48,6 +56,7 @@ public:
 
     // RealSpace(tm) (e.g. clip-space)
     void drawClipSpaceTriangle(const glm::vec4 &a, const glm::vec4 &b, const glm::vec4 &c);
+    void drawClipSpaceIndexed(DrawMode mode, const VertexBuffer<glm::vec4> &verts, const IndexBuffer &indicies);
 
 private:
     color_t currentColor;
