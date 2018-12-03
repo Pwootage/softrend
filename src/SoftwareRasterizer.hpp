@@ -96,7 +96,7 @@ public:
     drawScreenSpacePixel(pos.x + pos.y * width, rgba);
   }
 
-  void drawScreenSpaceLine(const FragmentType &a, const FragmentType &b) {
+  void drawScreenSpaceLine(const VertexType &a, const VertexType &b) {
     fb_pos_t
       x0 = a.x, y0 = a.y,
       x1 = b.x, y1 = b.y;
@@ -142,13 +142,13 @@ public:
     }
   }
 
-  void drawScreenSpaceTriLines(const FragmentType &a, const FragmentType &b, const FragmentType &c) {
+  void drawScreenSpaceTriLines(const VertexType &a, const VertexType &b, const VertexType &c) {
     this->drawScreenSpaceLine(a, b);
     this->drawScreenSpaceLine(b, c);
     this->drawScreenSpaceLine(c, a);
   }
 
-  void drawScreenSpaceTriFilled(FragmentType a, FragmentType b, FragmentType c) {
+  void drawScreenSpaceTriFilled(VertexType a, VertexType b, VertexType c) {
     // Sort our tris by y-coord
     if (a.pos.y > b.pos.y) std::swap(a, b);
     if (b.pos.y > c.pos.y) std::swap(b, c);
