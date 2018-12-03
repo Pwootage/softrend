@@ -3,7 +3,11 @@
 
 #import <vector>
 
-template <typename VertexType>
+namespace softrend {
+
+template<typename VertexType>
 using VertexBuffer = std::vector<VertexType>;
+
+};
 
 #endif //SOFTREND_VERTEXBUFFER_HPP

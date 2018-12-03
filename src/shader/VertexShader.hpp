@@ -18,25 +18,29 @@
 //barycentric coords
 //https://media.discordapp.net/attachments/268578965839544320/516486505896607775/unknown.png
 
-template <typename VertexType, typename VertexOutputType>
+namespace softrend {
+
+template<typename VertexType, typename VertexOutputType>
 class VertexShader {
 public:
-    typedef union {
-        float inFloats[sizeof(VertexType)];
-        VertexType input;
-    } VertexInput;
-    typedef union {
-        float outFloats[sizeof(VertexType)];
-        VertexOutputType output;
-    } VertexOutput;
+  typedef union {
+    float inFloats[sizeof(VertexType)];
+    VertexType input;
+  } VertexInput;
+  typedef union {
+    float outFloats[sizeof(VertexType)];
+    VertexOutputType output;
+  } VertexOutput;
 
-    virtual void kernel(const VertexInput &vert, VertexOutput &out) = 0;
+  virtual void kernel(const VertexInput &vert, VertexOutput &out) = 0;
 
-    template <size_t index, const VertexInput &input>
-    inline constexpr glm::vec3 &vec3At() {
-      static_assert(index + sizeof(glm::vec3) < sizeof(VertexInput))
-      return input.inFloats[index];
-    }
+  template<size_t index, const VertexInput &input>
+  inline constexpr glm::vec3 &vec3At() {
+    static_assert(index + sizeof(glm::vec3) < sizeof(VertexInput))
+    return input.inFloats[index];
+  }
+};
+
 };
 
 #endif //SOFTREND_VERTEXSHADER_H

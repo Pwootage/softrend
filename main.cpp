@@ -8,9 +8,11 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include <random>
 #include "src/SoftwareRasterizer.hpp"
 #include "src/buffers/VertexBuffer.hpp"
 #include "src/buffers/IndexBuffer.hpp"
+#include "src/shader/VertexTypes.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -19,6 +21,8 @@
 #include "src/tiny_obj_loader.h"
 
 using namespace std;
+using namespace softrend;
+using namespace glm;
 
 void render();
 
@@ -34,15 +38,13 @@ constexpr int FB_HEIGHT = 1024;
 //constexpr int FB_HEIGHT = 128;
 
 GLuint texID;
-SoftwareRasterizer *renderer;
+SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
 uint64_t frame = 0;
 glm::ivec2 a, b, c;
 
 // the teapot
-VertexBuffer<glm::vec3> teapotVerts;
+VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
 IndexBuffer teapotIndicies;
-
-using namespace glm;
 
 void loadTeapot();
 
@@ -82,7 +84,7 @@ int main() {
 
 //  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FB_WDITH, FB_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer);
 
-  renderer = new SoftwareRasterizer(FB_WIDTH, FB_HEIGHT);
+  renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
 
   // main loop
 //  glfwSwapInterval(1);
@@ -168,40 +170,40 @@ void render() {
 
   mat4 model(1);
 
-  // verts/indicies
-  VertexBuffer<vec3> verts{
-    {1,  1,  1},
-    {-1, 1,  1},
-    {1,  -1, 1},
-    {-1, -1, 1},
-    {1,  1,  -1},
-    {-1, 1,  -1},
-    {1,  -1, -1},
-    {-1, -1, -1}
-  };
-
-  constexpr index_t
-    ftr = 0,
-    ftl = 1,
-    fbr = 2,
-    fbl = 3,
-    btr = 4,
-    btl = 5,
-    bbr = 6,
-    bbl = 7;
-
-  IndexBuffer indicies{
-    // front
-    ftr, ftl, fbl,
-    fbl, fbr, ftr,
-    //back
-    btr, btl, bbl,
-    bbl, bbr, btr
-  };
+  // // verts/indicies
+  // VertexBuffer<formats::Pos> verts{
+  //   {{1,  1,  1,  1}},
+  //   {{-1, 1,  1,  1}},
+  //   {{1,  -1, 1,  1}},
+  //   {{-1, -1, 1,  1}},
+  //   {{1,  1,  -1, 1}},
+  //   {{-1, 1,  -1, 1}},
+  //   {{1,  -1, -1, 1}},
+  //   {{-1, -1, -1, 1}}
+  // };
+  //
+  // constexpr index_t
+  //   ftr = 0,
+  //   ftl = 1,
+  //   fbr = 2,
+  //   fbl = 3,
+  //   btr = 4,
+  //   btl = 5,
+  //   bbr = 6,
+  //   bbl = 7;
+  //
+  // IndexBuffer indicies{
+  //   // front
+  //   ftr, ftl, fbl,
+  //   fbl, fbr, ftr,
+  //   //back
+  //   btr, btl, bbl,
+  //   bbl, bbr, btr
+  // };
 
   // convert to clip space by hand for now
   mat4 mult = proj * view * model;
-  vector<vec4> clipSpace;
+  vector<formats::Pos4ColorNormalTex> clipSpace;
 //  clipSpace.resize(verts.size());
 //  for (int i = 0; i < verts.size(); i++) {
 //    clipSpace[i] = mult * vec4{verts[i], 1};
@@ -216,12 +218,13 @@ void render() {
 
   clipSpace.resize(teapotVerts.size());
   for (int i = 0; i < teapotVerts.size(); i++) {
-    clipSpace[i] = mult * vec4{teapotVerts[i], 1};
+    clipSpace[i] = teapotVerts[i];
+    clipSpace[i].pos = mult * clipSpace[i].pos;
   }
 
   renderer->setCurrentColor({0, 1, 0, 1});
   renderer->drawClipSpaceIndexed(
-    SoftwareRasterizer::DrawMode::TRAINGLES,
+    DrawMode::TRAINGLES,
     clipSpace,
     teapotIndicies
   );
@@ -243,12 +246,29 @@ void loadTeapot() {
     cerr << error << endl;
   }
 
+  random_device rd;
+  mt19937 rng(rd());
+  uniform_real_distribution<float> dist(0, 1);
+
   teapotVerts.resize(attrib.vertices.size() / 3);
   for (size_t i = 0, end = attrib.vertices.size() / 3; i < end; i++) {
-    teapotVerts[i] = {
+    teapotVerts[i].pos = {
       attrib.vertices[3 * i + 0],
       attrib.vertices[3 * i + 1],
-      attrib.vertices[3 * i + 2]
+      attrib.vertices[3 * i + 2],
+      1
+    };
+    teapotVerts[i].color = {
+      dist(rng), dist(rng), dist(rng), dist(rng)
+    };
+    teapotVerts[i].normal = {
+      attrib.normals[3 * i + 0],
+      attrib.normals[3 * i + 1],
+      attrib.normals[3 * i + 2]
+    };
+    teapotVerts[i].uv = {
+      attrib.texcoords[3 * i + 0],
+      attrib.texcoords[3 * i + 1]
     };
   }
 
