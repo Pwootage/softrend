@@ -265,9 +265,9 @@ public:
 
     // screen-space
     FragmentType ai, bi, ci;
-    ai.pos = {(a.pos.x / a.pos.w + 1.f) * halfW, (a.pos.y / a.pos.w + 1.f) * halfH, a.pos.z / a.pos.w, 1};
-    bi.pos = {(b.pos.x / b.pos.w + 1.f) * halfW, (b.pos.y / b.pos.w + 1.f) * halfH, a.pos.z / a.pos.w, 1};
-    ci.pos = {(c.pos.x / c.pos.w + 1.f) * halfW, (c.pos.y / c.pos.w + 1.f) * halfH, a.pos.z / a.pos.w, 1};
+    ai.pos = {(a.pos.x / a.pos.w + 1.f) * halfW, (a.pos.y / a.pos.w + 1.f) * halfH, a.pos.z / a.pos.w, a.pos.w};
+    bi.pos = {(b.pos.x / b.pos.w + 1.f) * halfW, (b.pos.y / b.pos.w + 1.f) * halfH, b.pos.z / b.pos.w, b.pos.w};
+    ci.pos = {(c.pos.x / c.pos.w + 1.f) * halfW, (c.pos.y / c.pos.w + 1.f) * halfH, c.pos.z / c.pos.w, c.pos.w};
 
 //  cout << to_string(a) << "->" << to_string(ai) << endl;
 //  cout << to_string(b) << "->" << to_string(bi) << endl;
