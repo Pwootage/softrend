@@ -4,6 +4,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <cstdint>
+#include <limits>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -11,6 +12,7 @@
 #include <glm/gtx/type_aligned.hpp>
 #include "buffers/VertexBuffer.hpp"
 #include "buffers/IndexBuffer.hpp"
+#include "shader/VertexShader.hpp"
 
 namespace softrend {
 
@@ -22,6 +24,7 @@ using color_t = glm::aligned_u8vec4;
 #endif
 
 using framebuffer_t = color_t;
+using depthbuffer_t = float;
 using fb_pos_t = int32_t;
 
 enum class DrawMode {
@@ -46,6 +49,7 @@ public:
     std::cout << sizeof(color_t::data);
 
     this->framebuffer = static_cast<framebuffer_t *>(malloc(sizeof(framebuffer_t) * width * height));
+    this->depthbuffer = static_cast<depthbuffer_t *>(malloc(sizeof(depthbuffer_t) * width * height));
   }
 
   // basic members
@@ -63,11 +67,10 @@ public:
 
   // Methods
   void clear() {
-    for (fb_pos_t y = 0; y < height; y++) {
-      fb_pos_t yOff = y * width;
-      for (fb_pos_t x = 0; x < width; x++) {
-        this->drawScreenSpacePixel(x + yOff, this->currentColor);
-      }
+    float clearDepth = -std::numeric_limits<float>::infinity();
+    for (fb_pos_t i = 0; i < width * height; i++) {
+      this->framebuffer[i] = this->currentColor;
+      this->depthbuffer[i] = clearDepth;
     }
   }
 
@@ -81,7 +84,10 @@ public:
   }
 
   // ScreenSpace
-  inline void drawScreenSpacePixel(fb_pos_t idx, const color_t &rgba) {
+  inline void drawScreenSpacePixel(fb_pos_t idx, const color_t &rgba, float depth) {
+    if (depthbuffer[idx] >= depth) return;
+    depthbuffer[idx] = depth;
+
 //  this->framebuffer[idx].align = rgba.align;
 //  this->framebuffer[idx] = rgba;
 // we take a block here depending on what's defined
@@ -90,10 +96,6 @@ public:
 #else
     *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
 #endif
-  }
-
-  inline void drawScreenSpacePixel(const glm::ivec2 &pos, const color_t &rgba) {
-    drawScreenSpacePixel(pos.x + pos.y * width, rgba);
   }
 
   void drawScreenSpaceLine(const VertexType &a, const VertexType &b) {
@@ -148,13 +150,25 @@ public:
     this->drawScreenSpaceLine(c, a);
   }
 
-  void drawScreenSpaceTriFilled(VertexType a, VertexType b, VertexType c) {
+  void drawScreenSpaceTriFilled(FragmentType a, FragmentType b, FragmentType c) {
     // Sort our tris by y-coord
     if (a.pos.y > b.pos.y) std::swap(a, b);
     if (b.pos.y > c.pos.y) std::swap(b, c);
     if (a.pos.y > b.pos.y) std::swap(a, b);
 
     // ok we're sorted now
+
+    // pre-calculate most some barycentric stuff
+    float by_cy = (b.pos.y - c.pos.y);
+    float cx_bx = (c.pos.x - b.pos.x);
+    float cy_ay = (c.pos.y - a.pos.y);
+    float ax_cx = (a.pos.x - c.pos.x);
+
+    float ay_cy = (a.pos.y - c.pos.y);
+    float det = by_cy * ax_cx + cx_bx * ay_cy;
+    VertexType interpolated;
+
+    // now we can draw
     fb_pos_t totalHeight = c.pos.y - a.pos.y;
     if (totalHeight == 0) {
       return; // can't draw nuthin
@@ -162,7 +176,7 @@ public:
     // bottom half
     fb_pos_t y0 = glm::clamp((fb_pos_t) floor(a.pos.y), 0, heightMax),
       y1 = glm::clamp((fb_pos_t) b.pos.y, 0, heightMax),
-      y2 = glm::clamp((fb_pos_t) c.pos.y, 0, heightMax);
+      y2 = glm::clamp((fb_pos_t) ceil(c.pos.y), 0, heightMax);
     { // top
       //the integer math here fixes tiny triangles going way wrong, for whatever reason?
       float invSlopeA =
@@ -178,10 +192,19 @@ public:
       for (fb_pos_t y = y0; y <= y1; y++) {
         fb_pos_t yOff = y * width;
         fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
-        fb_pos_t endX = glm::clamp((fb_pos_t) x1, 0, widthMax);
+        fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
 
         for (fb_pos_t x = startX; x < endX; x++) {
-          drawScreenSpacePixel(x + yOff, currentColor);
+          glm::vec3 bary;
+          bary.x = (by_cy * (x - c.pos.x) + cx_bx * (y - c.pos.y)) / det;
+          bary.y = (cy_ay * (x - c.pos.x) + ax_cx * (y - c.pos.y)) / det;
+          bary.z = 1 - bary.x - bary.y;
+
+          shader->interpolate(a, b, c, bary, interpolated);
+
+          color_t color = interpolated.color;
+
+          drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
         }
 
         x0 += invSlopeA;
@@ -192,10 +215,10 @@ public:
     { // bottom
       //the integer math here fixes tiny triangles going way wrong, for whatever reason?
       float invSlopeA =
-        (float) ((fb_pos_t)c.pos.x - (fb_pos_t)a.pos.x)
-        / (float) ((fb_pos_t)c.pos.y - (fb_pos_t)a.pos.y);
-      float invSlopeB = (float) ((fb_pos_t)c.pos.x - (fb_pos_t)b.pos.x)
-        / (float) ((fb_pos_t)c.pos.y - (fb_pos_t)b.pos.y);
+        (float) ((fb_pos_t) c.pos.x - (fb_pos_t) a.pos.x)
+        / (float) ((fb_pos_t) c.pos.y - (fb_pos_t) a.pos.y);
+      float invSlopeB = (float) ((fb_pos_t) c.pos.x - (fb_pos_t) b.pos.x)
+                        / (float) ((fb_pos_t) c.pos.y - (fb_pos_t) b.pos.y);
       if (invSlopeA < invSlopeB) std::swap(invSlopeA, invSlopeB);
 
       float x0 = c.pos.x;
@@ -203,9 +226,18 @@ public:
       for (fb_pos_t y = y2; y > y1; y--) {
         fb_pos_t yOff = y * width;
         fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
-        fb_pos_t endX = glm::clamp((fb_pos_t) x1, 0, widthMax);
+        fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
         for (fb_pos_t x = startX; x < endX; x++) {
-          drawScreenSpacePixel(x + yOff, currentColor);
+          glm::vec3 bary;
+          bary.x = (by_cy * (x - c.pos.x) + cx_bx * (y - c.pos.y)) / det;
+          bary.y = (cy_ay * (x - c.pos.x) + ax_cx * (y - c.pos.y)) / det;
+          bary.z = 1 - bary.x - bary.y;
+
+          shader->interpolate(a, b, c, bary, interpolated);
+
+          color_t color = interpolated.color;
+
+          drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
         }
 
         x0 -= invSlopeA;
@@ -251,7 +283,7 @@ public:
   }
 
   // RealSpace(tm) (e.g. clip-space)
-  void drawClipSpaceTriangle(const VertexType &a, const VertexType &b, const VertexType &c) {
+  void drawClipSpaceTriangle(const FragmentType &a, const FragmentType &b, const FragmentType &c) {
     // Alrighty we're in clip space, let's transform to screen space first
 
     float halfW = width / 2.f;
@@ -264,7 +296,7 @@ public:
 //  vec3 cc = c / c.w;
 
     // screen-space
-    FragmentType ai, bi, ci;
+    FragmentType ai = a, bi = b, ci = c;
     ai.pos = {(a.pos.x / a.pos.w + 1.f) * halfW, (a.pos.y / a.pos.w + 1.f) * halfH, a.pos.z / a.pos.w, a.pos.w};
     bi.pos = {(b.pos.x / b.pos.w + 1.f) * halfW, (b.pos.y / b.pos.w + 1.f) * halfH, b.pos.z / b.pos.w, b.pos.w};
     ci.pos = {(c.pos.x / c.pos.w + 1.f) * halfW, (c.pos.y / c.pos.w + 1.f) * halfH, c.pos.z / c.pos.w, c.pos.w};
@@ -279,7 +311,7 @@ public:
 
   }
 
-  void drawClipSpaceIndexed(DrawMode mode, const VertexBuffer<VertexType> &verts, const IndexBuffer &indicies) {
+  void drawClipSpaceIndexed(DrawMode mode, const VertexBuffer<FragmentType> &verts, const IndexBuffer &indicies) {
     if (mode == DrawMode::TRAINGLES) {
       for (size_t i = 0, end = indicies.size(); i + 2 < end; i += 3) {
         drawClipSpaceTriangle(
@@ -318,6 +350,54 @@ public:
 
   // Regular/transformable space
 
+  void drawTriangle(const VertexType &a, const VertexType &b, const VertexType &c) {
+    FragmentType fragA, fragB, fragC;
+
+    shader->kernel(a, fragA);
+    shader->kernel(b, fragB);
+    shader->kernel(c, fragC);
+
+    drawClipSpaceTriangle(fragA, fragB, fragC);
+  }
+
+  void drawIndexed(DrawMode mode, const VertexBuffer<VertexType> &verts, const IndexBuffer &indicies) {
+    if (mode == DrawMode::TRAINGLES) {
+      for (size_t i = 0, end = indicies.size(); i + 2 < end; i += 3) {
+        drawTriangle(
+          verts[indicies[i]],
+          verts[indicies[i + 1]],
+          verts[indicies[i + 2]]
+        );
+      }
+    } else if (mode == DrawMode::TRIANGLE_STRIP) {
+      for (size_t i = 0, end = indicies.size(); i + 2 < end; i++) {
+
+        if (i % 2 == 0) {
+          drawTriangle(
+            verts[indicies[i]],
+            verts[indicies[i + 1]],
+            verts[indicies[i + 2]]
+          );
+        } else {
+          drawTriangle(
+            verts[indicies[i + 2]],
+            verts[indicies[i + 1]],
+            verts[indicies[i]]
+          );
+        }
+      }
+    } else if (mode == DrawMode::TRIANGLE_FAN) {
+      for (size_t i = 1, end = indicies.size(); i + 1 < end; i++) {
+        drawTriangle(
+          verts[indicies[0]],
+          verts[indicies[i]],
+          verts[indicies[i + 1]]
+        );
+      }
+    }
+  }
+
+  VertexShader<VertexType, FragmentType> *shader;
 private:
   color_t currentColor;
   int width;
@@ -325,6 +405,7 @@ private:
   int widthMax;
   int heightMax;
   framebuffer_t *framebuffer;
+  depthbuffer_t *depthbuffer;
 
   // Helpers
   inline void drawLineLow(fb_pos_t x0, fb_pos_t y0, fb_pos_t x1, fb_pos_t y1) {

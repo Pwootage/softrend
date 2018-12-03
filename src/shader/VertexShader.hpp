@@ -20,25 +20,23 @@
 
 namespace softrend {
 
-template<typename VertexType, typename VertexOutputType>
+template<typename VertexType, typename FragmentType>
 class VertexShader {
 public:
-  typedef union {
-    float inFloats[sizeof(VertexType)];
-    VertexType input;
-  } VertexInput;
-  typedef union {
-    float outFloats[sizeof(VertexType)];
-    VertexOutputType output;
-  } VertexOutput;
 
-  virtual void kernel(const VertexInput &vert, VertexOutput &out) = 0;
+  virtual void kernel(const VertexType &vert, FragmentType &out) = 0;
 
-  template<size_t index, const VertexInput &input>
-  inline constexpr glm::vec3 &vec3At() {
-    static_assert(index + sizeof(glm::vec3) < sizeof(VertexInput))
-    return input.inFloats[index];
-  }
+  virtual void interpolate(const FragmentType &a,
+                           const FragmentType &b,
+                           const FragmentType &c,
+                           const glm::vec3 &barycentric,
+                           FragmentType &out) = 0;
+
+  // template<size_t index, const VertexType &input>
+  // inline constexpr glm::vec3 &vec3At() {
+  //   static_assert(index + sizeof(glm::vec3) < sizeof(VertexType));
+  //   return input.inFloats[index];
+  // }
 };
 
 };

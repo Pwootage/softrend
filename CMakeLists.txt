@@ -13,12 +13,14 @@ find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 
 set(SOURCE_FILES
-        main.cpp)
+        main.cpp
+        src/shader/BasicVertexShader.cpp)
 
 set(HEADER_FILES
         src/SoftwareRasterizer.hpp
         src/shader/VertexShader.hpp
         src/shader/VertexTypes.hpp
+        src/shader/BasicVertexShader.hpp
         src/buffers/VertexBuffer.hpp
         src/buffers/IndexBuffer.hpp
         )

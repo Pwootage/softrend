@@ -13,6 +13,7 @@
 #include "src/buffers/VertexBuffer.hpp"
 #include "src/buffers/IndexBuffer.hpp"
 #include "src/shader/VertexTypes.hpp"
+#include "src/shader/BasicVertexShader.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -30,19 +31,22 @@ void errorCallback(int error, const char *description) {
   cerr << "Error " << error << ": " << description << endl;
 }
 
-constexpr int FB_WIDTH = 1024;
-constexpr int FB_HEIGHT = 1024;
-//constexpr int FB_WIDTH = 512;
-//constexpr int FB_HEIGHT = 512;
-//constexpr int FB_WIDTH = 128;
-//constexpr int FB_HEIGHT = 128;
+// constexpr int FB_WIDTH = 1024;
+// constexpr int FB_HEIGHT = 1024;
+// constexpr int FB_WIDTH = 512;
+// constexpr int FB_HEIGHT = 512;
+constexpr int FB_WIDTH = 128;
+constexpr int FB_HEIGHT = 128;
 
 GLuint texID;
-SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
 uint64_t frame = 0;
-glm::ivec2 a, b, c;
+
+// Renderer
+SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
+BasicVertexShader basicShader;
 
 // the teapot
+
 VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
 IndexBuffer teapotIndicies;
 
@@ -85,6 +89,7 @@ int main() {
 //  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FB_WDITH, FB_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer);
 
   renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
+  renderer->shader = &basicShader;
 
   // main loop
 //  glfwSwapInterval(1);
@@ -170,62 +175,22 @@ void render() {
 
   mat4 model(1);
 
-  // // verts/indicies
-  // VertexBuffer<formats::Pos> verts{
-  //   {{1,  1,  1,  1}},
-  //   {{-1, 1,  1,  1}},
-  //   {{1,  -1, 1,  1}},
-  //   {{-1, -1, 1,  1}},
-  //   {{1,  1,  -1, 1}},
-  //   {{-1, 1,  -1, 1}},
-  //   {{1,  -1, -1, 1}},
-  //   {{-1, -1, -1, 1}}
-  // };
-  //
-  // constexpr index_t
-  //   ftr = 0,
-  //   ftl = 1,
-  //   fbr = 2,
-  //   fbl = 3,
-  //   btr = 4,
-  //   btl = 5,
-  //   bbr = 6,
-  //   bbl = 7;
-  //
-  // IndexBuffer indicies{
-  //   // front
-  //   ftr, ftl, fbl,
-  //   fbl, fbr, ftr,
-  //   //back
-  //   btr, btl, bbl,
-  //   bbl, bbr, btr
-  // };
+  basicShader.setMVP(model, view, proj);
 
   // convert to clip space by hand for now
-  mat4 mult = proj * view * model;
-  vector<formats::Pos4ColorNormalTex> clipSpace;
-//  clipSpace.resize(verts.size());
-//  for (int i = 0; i < verts.size(); i++) {
-//    clipSpace[i] = mult * vec4{verts[i], 1};
-//  }
-//
-//  renderer->setCurrentColor({1, 0, 0, 1});
-//  renderer->drawClipSpaceIndexed(
-//    SoftwareRasterizer::DrawMode::TRAINGLES,
-//    clipSpace,
-//    indicies
-//  );
-
-  clipSpace.resize(teapotVerts.size());
-  for (int i = 0; i < teapotVerts.size(); i++) {
-    clipSpace[i] = teapotVerts[i];
-    clipSpace[i].pos = mult * clipSpace[i].pos;
-  }
+  // mat4 mult = proj * view * model;
+  // vector<formats::Pos4ColorNormalTex> clipSpace;
+  //
+  // clipSpace.resize(teapotVerts.size());
+  // for (int i = 0; i < teapotVerts.size(); i++) {
+  //   clipSpace[i] = teapotVerts[i];
+  //   clipSpace[i].pos = mult * clipSpace[i].pos;
+  // }
 
   renderer->setCurrentColor({0, 1, 0, 1});
-  renderer->drawClipSpaceIndexed(
+  renderer->drawIndexed(
     DrawMode::TRAINGLES,
-    clipSpace,
+    teapotVerts,
     teapotIndicies
   );
 }
