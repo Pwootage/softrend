@@ -14,13 +14,16 @@ find_package(glm REQUIRED)
 
 set(SOURCE_FILES
         main.cpp
-        src/shader/BasicVertexShader.cpp)
+        src/shader/BasicVertexShader.cpp
+        src/shader/PhongFragmentShader.cpp)
 
 set(HEADER_FILES
         src/SoftwareRasterizer.hpp
         src/shader/VertexShader.hpp
         src/shader/VertexTypes.hpp
         src/shader/BasicVertexShader.hpp
+        src/shader/FragmentShader.hpp
+        src/shader/PhongFragmentShader.hpp
         src/buffers/VertexBuffer.hpp
         src/buffers/IndexBuffer.hpp
         )

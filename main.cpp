@@ -14,6 +14,7 @@
 #include "src/buffers/IndexBuffer.hpp"
 #include "src/shader/VertexTypes.hpp"
 #include "src/shader/BasicVertexShader.hpp"
+#include "src/shader/PhongFragmentShader.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -31,19 +32,20 @@ void errorCallback(int error, const char *description) {
   cerr << "Error " << error << ": " << description << endl;
 }
 
-// constexpr int FB_WIDTH = 1024;
-// constexpr int FB_HEIGHT = 1024;
+constexpr int FB_WIDTH = 1024;
+constexpr int FB_HEIGHT = 1024;
 // constexpr int FB_WIDTH = 512;
 // constexpr int FB_HEIGHT = 512;
-constexpr int FB_WIDTH = 128;
-constexpr int FB_HEIGHT = 128;
+// constexpr int FB_WIDTH = 128;
+// constexpr int FB_HEIGHT = 128;
 
 GLuint texID;
 uint64_t frame = 0;
 
 // Renderer
 SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
-BasicVertexShader basicShader;
+BasicVertexShader basicVertShader;
+PhongFragmentShader phongFragmentShader;
 
 // the teapot
 
@@ -89,7 +91,8 @@ int main() {
 //  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FB_WDITH, FB_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer);
 
   renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
-  renderer->shader = &basicShader;
+  renderer->vertexShader = &basicVertShader;
+  renderer->fragmentShader = &phongFragmentShader;
 
   // main loop
 //  glfwSwapInterval(1);
@@ -161,11 +164,18 @@ void render() {
   float pitch = sin((frame) / 400.f);
   float dist = 50;
 
-  mat4 proj = perspectiveFov(
-    45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
-  );
+  phongFragmentShader.light_dir = normalize(vec3{0.0, -0.5f, 0.5f});
+  phongFragmentShader.light_color_diffuse = {0.8f, 0.8f, 0.8f, 1.f};
+  phongFragmentShader.light_color_ambient = {0.2f, 0.2f, 0.2f, 1.f};
 
-//  mat4 proj = ortho(-dist, dist, -dist, dist, 0.1f, 1000.f);
+  // yaw = 0;
+  // pitch = 0;
+
+  // mat4 proj = perspectiveFov(
+  //   45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
+  // );
+
+ mat4 proj = ortho(-dist, dist, -dist, dist, 0.1f, 1000.f);
 
   mat4 view = lookAt(
     vec3{cos(pitch) * sin(yaw), cos(pitch) * cos(yaw), sin(pitch)} * dist, //eye
@@ -175,7 +185,7 @@ void render() {
 
   mat4 model(1);
 
-  basicShader.setMVP(model, view, proj);
+  basicVertShader.setMVP(model, view, proj);
 
   // convert to clip space by hand for now
   // mat4 mult = proj * view * model;
@@ -196,8 +206,8 @@ void render() {
 }
 
 void loadTeapot() {
-//  string inputfile = "models/teapot.obj";
-  string inputfile = "models/teapot-low.obj";
+ string inputfile = "models/teapot.obj";
+  // string inputfile = "models/teapot-low.obj";
   string error;
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -224,7 +234,7 @@ void loadTeapot() {
       1
     };
     teapotVerts[i].color = {
-      dist(rng), dist(rng), dist(rng), dist(rng)
+      1, 1, 1, 1
     };
     teapotVerts[i].normal = {
       attrib.normals[3 * i + 0],

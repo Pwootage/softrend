@@ -13,6 +13,7 @@
 #include "buffers/VertexBuffer.hpp"
 #include "buffers/IndexBuffer.hpp"
 #include "shader/VertexShader.hpp"
+#include "shader/FragmentShader.hpp"
 
 namespace softrend {
 
@@ -151,6 +152,12 @@ public:
   }
 
   void drawScreenSpaceTriFilled(FragmentType a, FragmentType b, FragmentType c) {
+    glm::vec3 c_a = c.pos - a.pos;
+    glm::vec3 b_a = b.pos - a.pos;
+    glm::vec3 in = {0.f,0.f,1.f};
+    bool backface = dot(cross(c_a, b_a), in) < 0;
+    if (backface) return;
+
     // Sort our tris by y-coord
     if (a.pos.y > b.pos.y) std::swap(a, b);
     if (b.pos.y > c.pos.y) std::swap(b, c);
@@ -191,20 +198,26 @@ public:
       float x1 = a.pos.x;
       for (fb_pos_t y = y0; y <= y1; y++) {
         fb_pos_t yOff = y * width;
-        fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
+        fb_pos_t startX = glm::clamp((fb_pos_t) floor(x0), 0, widthMax);
         fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
+
+        float bary_a_y_part = cx_bx * (y - c.pos.y);
+        float bary_c_y_part = ax_cx * (y - c.pos.y);
 
         for (fb_pos_t x = startX; x < endX; x++) {
           glm::vec3 bary;
-          bary.x = (by_cy * (x - c.pos.x) + cx_bx * (y - c.pos.y)) / det;
-          bary.y = (cy_ay * (x - c.pos.x) + ax_cx * (y - c.pos.y)) / det;
+          bary.x = (by_cy * (x - c.pos.x) + bary_a_y_part) / det;
+          bary.y = (cy_ay * (x - c.pos.x) + bary_c_y_part) / det;
           bary.z = 1 - bary.x - bary.y;
 
-          shader->interpolate(a, b, c, bary, interpolated);
+          vertexShader->interpolate(a, b, c, bary, interpolated);
 
-          color_t color = interpolated.color;
+          color_t color;
+          float depth;
 
-          drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
+          if (fragmentShader->kernel(interpolated, color, depth)) {
+            drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
+          }
         }
 
         x0 += invSlopeA;
@@ -225,19 +238,26 @@ public:
       float x1 = c.pos.x;
       for (fb_pos_t y = y2; y > y1; y--) {
         fb_pos_t yOff = y * width;
-        fb_pos_t startX = glm::clamp((fb_pos_t) x0, 0, widthMax);
+        fb_pos_t startX = glm::clamp((fb_pos_t) floor(x0), 0, widthMax);
         fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
+
+        float bary_a_y_part = cx_bx * (y - c.pos.y);
+        float bary_c_y_part = ax_cx * (y - c.pos.y);
+
         for (fb_pos_t x = startX; x < endX; x++) {
           glm::vec3 bary;
-          bary.x = (by_cy * (x - c.pos.x) + cx_bx * (y - c.pos.y)) / det;
-          bary.y = (cy_ay * (x - c.pos.x) + ax_cx * (y - c.pos.y)) / det;
+          bary.x = (by_cy * (x - c.pos.x) + bary_a_y_part) / det;
+          bary.y = (cy_ay * (x - c.pos.x) + bary_c_y_part) / det;
           bary.z = 1 - bary.x - bary.y;
 
-          shader->interpolate(a, b, c, bary, interpolated);
+          vertexShader->interpolate(a, b, c, bary, interpolated);
 
-          color_t color = interpolated.color;
+          color_t color;
+          float depth;
 
-          drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
+          if (fragmentShader->kernel(interpolated, color, depth)) {
+            drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
+          }
         }
 
         x0 -= invSlopeA;
@@ -353,9 +373,9 @@ public:
   void drawTriangle(const VertexType &a, const VertexType &b, const VertexType &c) {
     FragmentType fragA, fragB, fragC;
 
-    shader->kernel(a, fragA);
-    shader->kernel(b, fragB);
-    shader->kernel(c, fragC);
+    vertexShader->kernel(a, fragA);
+    vertexShader->kernel(b, fragB);
+    vertexShader->kernel(c, fragC);
 
     drawClipSpaceTriangle(fragA, fragB, fragC);
   }
@@ -397,7 +417,8 @@ public:
     }
   }
 
-  VertexShader<VertexType, FragmentType> *shader;
+  VertexShader<VertexType, FragmentType> *vertexShader;
+  FragmentShader<FragmentType> *fragmentShader;
 private:
   color_t currentColor;
   int width;
