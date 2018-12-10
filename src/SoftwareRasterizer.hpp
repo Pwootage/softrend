@@ -15,6 +15,10 @@
 #include "shader/VertexShader.hpp"
 #include "shader/FragmentShader.hpp"
 
+#ifdef __ARM_NEON
+#include <arm_neon.h>
+#endif
+
 namespace softrend {
 
 #define F32_COLOR
