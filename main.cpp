@@ -141,6 +141,9 @@ void mainLoop() {
   string titleS = title.str();
   glfwSetWindowTitle(window, titleS.c_str());
   frame++;
+  if (frame % 60 == 0) {
+    cout << titleS << endl;
+  }
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                renderer->getWidth(), renderer->getHeight(),
@@ -189,8 +192,8 @@ void render() {
   phongFragmentShader.light_color_diffuse = {0.8f, 0.8f, 0.8f, 1.f};
   phongFragmentShader.light_color_ambient = {0.2f, 0.2f, 0.2f, 1.f};
 
-  // yaw = 0;
-  // pitch = 0;
+  yaw = -0.4f;
+  pitch = -0.4f;
 
   // mat4 proj = perspectiveFov(
   //   45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
