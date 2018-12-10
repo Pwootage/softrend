@@ -90,14 +90,16 @@ public:
 //  this->framebuffer[idx].align = rgba.align;
 //  this->framebuffer[idx] = rgba;
 // we take a block here depending on what's defined
-#ifdef EMSCRIPTEN
-    this->framebuffer[idx] = rgba;
-#else
-#ifdef F32_COLOR
+#ifdef __SSE2__
+    #ifdef F32_COLOR
     *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
 #else
     *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
 #endif
+#elif __ARM_NEON__
+    *reinterpret_cast<float32x4_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const float32x4_t *>(&rgba);
+#else
+    this->framebuffer[idx] = rgba;
 #endif
   }
 
