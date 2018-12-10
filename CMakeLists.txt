@@ -45,10 +45,9 @@ if (NOT EMSCRIPTEN)
     find_package(OpenGL REQUIRED)
 endif ()
 
-find_package(glm REQUIRED)
-
-
 # Files
+include_directories(include)
+
 set(SOURCE_FILES
         main.cpp
         src/shader/BasicVertexShader.cpp
@@ -78,7 +77,7 @@ file(COPY ${RESOURCE_FILES}
 if (EMSCRIPTEN)
     add_executable(softrend.html ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
 
-    target_link_libraries(softrend.html glm glfw)
+    target_link_libraries(softrend.html glm)
 
 
     #    string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPER)
@@ -101,5 +100,5 @@ if (EMSCRIPTEN)
 else ()
     add_executable(softrend ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
 
-    target_link_libraries(softrend glm glfw ${OPENGL_gl_LIBRARY})
+    target_link_libraries(softrend glfw ${OPENGL_gl_LIBRARY})
 endif ()
