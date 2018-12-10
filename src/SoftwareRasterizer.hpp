@@ -96,7 +96,7 @@ public:
 #else
     *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
 #endif
-#elif __ARM_NEON__
+#elif __ARM_NEON
     *reinterpret_cast<float32x4_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const float32x4_t *>(&rgba);
 #else
     this->framebuffer[idx] = rgba;

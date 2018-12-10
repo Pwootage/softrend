@@ -14,8 +14,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
+# ARM-specific flags
+
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mfpu=neon -mfloat-abi=hard")
+endif ()
+
+# Emscripten-specific flags
 if (EMSCRIPTEN)
-    # Emscripten-specific flags
     set(EMSCRIPTEN_FLAGS "-s LEGACY_GL_EMULATION=1 -s GL_FFP_ONLY=1 -s USE_GLFW=3 -s TOTAL_MEMORY=128MB")
     set(EMSCRIPTEN_LINK_FLAGS "--preload-file models/teapot-low.obj --preload-file models/teapot.obj")
 
