@@ -1,7 +1,7 @@
 #ifndef SOFTREND_VERTEXBUFFER_HPP
 #define SOFTREND_VERTEXBUFFER_HPP
 
-#import <vector>
+#include <vector>
 
 namespace softrend {
 
