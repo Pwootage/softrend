@@ -19,8 +19,11 @@
 #include <glm/gtx/transform.hpp>
 
 #define TINYOBJLOADER_IMPLEMENTATION
-
 #include "src/tiny_obj_loader.h"
+
+#ifdef EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 using namespace std;
 using namespace softrend;
@@ -54,6 +57,12 @@ IndexBuffer teapotIndicies;
 
 void loadTeapot();
 
+void mainLoop();
+
+GLFWwindow *window;
+constexpr int FRAME_AVG_COUNT = 60;
+double frameTimes[FRAME_AVG_COUNT];
+
 int main() {
   loadTeapot();
 
@@ -66,7 +75,7 @@ int main() {
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-  GLFWwindow *window = glfwCreateWindow(1024, 1024, "softrend", nullptr, nullptr);
+  window = glfwCreateWindow(1024, 1024, "softrend", nullptr, nullptr);
   if (!window) {
     cerr << "Failed to create window" << endl;
     return 1;
@@ -97,62 +106,74 @@ int main() {
   // main loop
 //  glfwSwapInterval(1);
 
-  constexpr int FRAME_AVG_COUNT = 60;
-  double frameTimes[FRAME_AVG_COUNT];
+
   for (int i = 0; i < FRAME_AVG_COUNT; i++) {
     frameTimes[i] = 1;
   }
   glfwSwapInterval(1);
+#ifdef EMSCRIPTEN
+  emscripten_set_main_loop(mainLoop, 0, 1);
+#else
   while (!glfwWindowShouldClose(window)) {
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-
-    {
-      auto startT = chrono::high_resolution_clock::now();
-      render();
-      auto endT = chrono::high_resolution_clock::now();
-      auto time = chrono::duration<double, milli>(endT - startT).count();
-      frameTimes[frame % FRAME_AVG_COUNT] = time;
-    }
-    auto avg = accumulate(begin(frameTimes), end(frameTimes), 0.0) / (double) FRAME_AVG_COUNT;
-    stringstream title;
-    title << "softrend " << fixed << setprecision(2) << avg << " ms " << frame;
-    string titleS = title.str();
-    glfwSetWindowTitle(window, titleS.c_str());
-    frame++;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                 renderer->getWidth(), renderer->getHeight(),
-                 0, GL_RGBA, GL_FLOAT,
-                 renderer->getFramebuffer());
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBegin(GL_QUADS);
-
-    glColor4f(1, 1, 1, 1);
-
-    glTexCoord2f(0, 1);
-    glVertex3f(-1, -1, 0);
-    glTexCoord2f(0, 0);
-    glVertex3f(-1, 1, 0);
-
-    glTexCoord2f(1, 0);
-    glVertex3f(1, 1, 0);
-    glTexCoord2f(1, 1);
-    glVertex3f(1, -1, 0);
-
-    glEnd();
-    glfwSwapBuffers(window);
-
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-      glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-    glfwPollEvents();
+    mainLoop();
   }
+#endif
 
   glfwTerminate();
   return 0;
+}
+
+void mainLoop() {
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  glViewport(0, 0, width, height);
+
+  {
+    auto startT = chrono::steady_clock::now();
+    render();
+    auto endT = chrono::steady_clock::now();
+    auto time = chrono::duration<double, milli>(endT - startT).count();
+    frameTimes[frame % FRAME_AVG_COUNT] = time;
+  }
+  auto avg = accumulate(begin(frameTimes), end(frameTimes), 0.0) / (double) FRAME_AVG_COUNT;
+  stringstream title;
+  title << "softrend " << fixed << setprecision(2) << avg << " ms " << frame;
+  string titleS = title.str();
+  glfwSetWindowTitle(window, titleS.c_str());
+  frame++;
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+               renderer->getWidth(), renderer->getHeight(),
+               0, GL_RGBA, GL_FLOAT,
+               renderer->getFramebuffer());
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glBegin(GL_QUADS);
+
+  glColor4f(1, 1, 1, 1);
+
+  glTexCoord2f(0, 1);
+  glVertex3f(-1, -1, 0);
+
+  glColor4f(1, 1, 1, 1);
+  glTexCoord2f(0, 0);
+  glVertex3f(-1, 1, 0);
+
+  glColor4f(1, 1, 1, 1);
+  glTexCoord2f(1, 0);
+  glVertex3f(1, 1, 0);
+
+  glColor4f(1, 1, 1, 1);
+  glTexCoord2f(1, 1);
+  glVertex3f(1, -1, 0);
+
+  glEnd();
+  glfwSwapBuffers(window);
+
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+  glfwPollEvents();
 }
 
 void render() {
@@ -175,7 +196,7 @@ void render() {
   //   45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
   // );
 
- mat4 proj = ortho(-dist, dist, -dist, dist, 0.1f, 1000.f);
+  mat4 proj = ortho(-dist, dist, -dist, dist, 0.1f, 1000.f);
 
   mat4 view = lookAt(
     vec3{cos(pitch) * sin(yaw), cos(pitch) * cos(yaw), sin(pitch)} * dist, //eye
@@ -206,7 +227,7 @@ void render() {
 }
 
 void loadTeapot() {
- string inputfile = "models/teapot.obj";
+  string inputfile = "models/teapot.obj";
   // string inputfile = "models/teapot-low.obj";
   string error;
   tinyobj::attrib_t attrib;

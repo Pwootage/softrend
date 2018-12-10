@@ -47,8 +47,6 @@ public:
       widthMax(width - 1),
       heightMax(height - 1) {
 
-    std::cout << sizeof(color_t::data);
-
     this->framebuffer = static_cast<framebuffer_t *>(malloc(sizeof(framebuffer_t) * width * height));
     this->depthbuffer = static_cast<depthbuffer_t *>(malloc(sizeof(depthbuffer_t) * width * height));
   }
@@ -92,10 +90,14 @@ public:
 //  this->framebuffer[idx].align = rgba.align;
 //  this->framebuffer[idx] = rgba;
 // we take a block here depending on what's defined
+#ifdef EMSCRIPTEN
+    this->framebuffer[idx] = rgba;
+#else
 #ifdef F32_COLOR
     *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
 #else
     *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
+#endif
 #endif
   }
 
