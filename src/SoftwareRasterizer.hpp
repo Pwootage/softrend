@@ -30,12 +30,20 @@ using color_t = glm::aligned_u8vec4;
 
 using framebuffer_t = color_t;
 using depthbuffer_t = float;
-using fb_pos_t = int32_t;
+using fb_vec_t = glm::aligned_ivec2;
+using fb_pos_t = fb_vec_t::value_type;
 
 enum class DrawMode {
   TRAINGLES,
   TRIANGLE_STRIP,
   TRIANGLE_FAN
+};
+
+enum class CullMode {
+  FRONT_FACING,
+  BACK_FACING,
+  NONE,
+  ALL
 };
 
 // hold on to something, we're about to template like nothing you've seen before
@@ -70,7 +78,7 @@ public:
 
   // Methods
   void clear() {
-    float clearDepth = -std::numeric_limits<float>::infinity();
+    float clearDepth = std::numeric_limits<float>::infinity();
     for (fb_pos_t i = 0; i < width * height; i++) {
       this->framebuffer[i] = this->currentColor;
       this->depthbuffer[i] = clearDepth;
@@ -88,14 +96,14 @@ public:
 
   // ScreenSpace
   inline void drawScreenSpacePixel(fb_pos_t idx, const color_t &rgba, float depth) {
-    if (depthbuffer[idx] >= depth) return;
+    if (depthbuffer[idx] <= depth) return;
     depthbuffer[idx] = depth;
 
 //  this->framebuffer[idx].align = rgba.align;
 //  this->framebuffer[idx] = rgba;
 // we take a block here depending on what's defined
 #ifdef __SSE2__
-    #ifdef F32_COLOR
+#ifdef F32_COLOR
     *reinterpret_cast<__m128i *>(&this->framebuffer[idx]) = *reinterpret_cast<const __m128i *>(&rgba);
 #else
     *reinterpret_cast<uint32_t *>(&this->framebuffer[idx]) = *reinterpret_cast<const uint32_t *>(&rgba);
@@ -159,155 +167,92 @@ public:
     this->drawScreenSpaceLine(c, a);
   }
 
-  void drawScreenSpaceTriFilled(FragmentType a, FragmentType b, FragmentType c) {
-    glm::vec3 c_a = c.pos - a.pos;
-    glm::vec3 b_a = b.pos - a.pos;
-    glm::vec3 in = {0.f,0.f,1.f};
-    bool backface = dot(cross(c_a, b_a), in) < 0;
-    if (backface) return;
+private:
+  inline fb_pos_t orient2D(const fb_vec_t &a, const fb_vec_t &b, const fb_vec_t &c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  }
 
-    // Sort our tris by y-coord
-    if (a.pos.y > b.pos.y) std::swap(a, b);
-    if (b.pos.y > c.pos.y) std::swap(b, c);
-    if (a.pos.y > b.pos.y) std::swap(a, b);
+public:
+  void drawScreenSpaceTriFilled(FragmentType aFrag, FragmentType bFrag, FragmentType cFrag) {
+    constexpr fb_pos_t subPixelScale = 4;
+    constexpr fb_pos_t subPixelStep = 1 << subPixelScale; // 4 bits
+    constexpr fb_pos_t subPixelMask = subPixelStep - 1; // 4 bits
 
-    // ok we're sorted now
+    fb_vec_t a = {aFrag.pos.x * subPixelStep, aFrag.pos.y * subPixelStep};
+    fb_vec_t b = {bFrag.pos.x * subPixelStep, bFrag.pos.y * subPixelStep};
+    fb_vec_t c = {cFrag.pos.x * subPixelStep, cFrag.pos.y * subPixelStep};
 
-    // pre-calculate most some barycentric stuff
-    float by_cy = (b.pos.y - c.pos.y);
-    float cx_bx = (c.pos.x - b.pos.x);
-    float cy_ay = (c.pos.y - a.pos.y);
-    float ax_cx = (a.pos.x - c.pos.x);
+    fb_pos_t det = orient2D(a, b, c);
+    float detF = det;
 
-    float ay_cy = (a.pos.y - c.pos.y);
-    float det = by_cy * ax_cx + cx_bx * ay_cy;
+    bool frontFacing = det > 0;
+
+    switch (cullMode) {
+      case CullMode::FRONT_FACING:
+        if (frontFacing) return;
+        break;
+      case CullMode::BACK_FACING:
+        if (!frontFacing) return;
+        break;
+      case CullMode::ALL:
+        return;
+      case CullMode::NONE:
+        break;
+    }
+
+    fb_vec_t min = glm::min(glm::min(a, b), c);
+    fb_vec_t max = glm::max(glm::max(a, b), c);
+    min = glm::clamp(min, {0, 0}, {widthMax << subPixelScale, heightMax << subPixelScale});
+    max = glm::clamp(max, {0, 0}, {widthMax << subPixelScale, heightMax << subPixelScale});
+
+    min.x = (min.x + subPixelStep) & ~subPixelMask;
+    min.y = (min.y + subPixelStep) & ~subPixelMask;
+
+    // Slopes of the various barycentric coordinates
+    // Need to go up by subPixelStep per row, but that's a shift so it's fast
+    fb_pos_t A01 = (a.y - b.y) << subPixelScale, B01 = (b.x - a.x) << subPixelScale;
+    fb_pos_t A12 = (b.y - c.y) << subPixelScale, B12 = (c.x - b.x) << subPixelScale;
+    fb_pos_t A20 = (c.y - a.y) << subPixelScale, B20 = (a.x - c.x) << subPixelScale;
+
+    // Barycentric stepping setup
+    fb_vec_t p = min;
     VertexType interpolated;
 
-    // now we can draw
-    fb_pos_t totalHeight = c.pos.y - a.pos.y;
-    if (totalHeight == 0) {
-      return; // can't draw nuthin
-    }
-    // bottom half
-    fb_pos_t y0 = glm::clamp((fb_pos_t) floor(a.pos.y), 0, heightMax),
-      y1 = glm::clamp((fb_pos_t) b.pos.y, 0, heightMax),
-      y2 = glm::clamp((fb_pos_t) ceil(c.pos.y), 0, heightMax);
-    { // top
-      //the integer math here fixes tiny triangles going way wrong, for whatever reason?
-      float invSlopeA =
-        (float) ((fb_pos_t) b.pos.x - (fb_pos_t) a.pos.x)
-        / (float) ((fb_pos_t) b.pos.y - (fb_pos_t) a.pos.y);
-      float invSlopeB =
-        (float) ((fb_pos_t) c.pos.x - (fb_pos_t) a.pos.x)
-        / (float) ((fb_pos_t) c.pos.y - (fb_pos_t) a.pos.y);
-      if (invSlopeA > invSlopeB) std::swap(invSlopeA, invSlopeB);
+    fb_pos_t aRow = orient2D(b, c, p);
+    fb_pos_t bRow = orient2D(c, a, p);
+    fb_pos_t cRow = orient2D(a, b, p);
 
-      float x0 = a.pos.x;
-      float x1 = a.pos.x;
-      for (fb_pos_t y = y0; y <= y1; y++) {
-        fb_pos_t yOff = y * width;
-        fb_pos_t startX = glm::clamp((fb_pos_t) floor(x0), 0, widthMax);
-        fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
+    for (p.y = min.y; p.y <= max.y; p.y += subPixelStep) {
+      fb_pos_t yOff = (p.y >> subPixelScale) * width;
+      fb_pos_t aBary = aRow;
+      fb_pos_t bBary = bRow;
+      fb_pos_t cBary = cRow;
 
-        float bary_a_y_part = cx_bx * (y - c.pos.y);
-        float bary_c_y_part = ax_cx * (y - c.pos.y);
-
-        for (fb_pos_t x = startX; x < endX; x++) {
+      for (p.x = min.x; p.x <= max.x; p.x += subPixelStep) {
+        if ((aBary | bBary | cBary) >= 0) {
           glm::vec3 bary;
-          bary.x = (by_cy * (x - c.pos.x) + bary_a_y_part) / det;
-          bary.y = (cy_ay * (x - c.pos.x) + bary_c_y_part) / det;
-          bary.z = 1 - bary.x - bary.y;
+          bary.x = (float) aBary / detF;
+          bary.y = (float) bBary / detF;
+          bary.z = (float) cBary / detF;
 
-          vertexShader->interpolate(a, b, c, bary, interpolated);
+          vertexShader->interpolate(aFrag, bFrag, cFrag, bary, interpolated);
 
-          color_t color;
           float depth;
-
-          if (fragmentShader->kernel(interpolated, color, depth)) {
-            drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
+          color_t color;
+          if (fragmentShader->kernel(interpolated, false, color, depth)) {
+            drawScreenSpacePixel(yOff + (p.x >> subPixelScale), color, depth);
           }
         }
 
-        x0 += invSlopeA;
-        x1 += invSlopeB;
+        aBary += A12;
+        bBary += A20;
+        cBary += A01;
       }
+
+      aRow += B12;
+      bRow += B20;
+      cRow += B01;
     }
-
-    { // bottom
-      //the integer math here fixes tiny triangles going way wrong, for whatever reason?
-      float invSlopeA =
-        (float) ((fb_pos_t) c.pos.x - (fb_pos_t) a.pos.x)
-        / (float) ((fb_pos_t) c.pos.y - (fb_pos_t) a.pos.y);
-      float invSlopeB = (float) ((fb_pos_t) c.pos.x - (fb_pos_t) b.pos.x)
-                        / (float) ((fb_pos_t) c.pos.y - (fb_pos_t) b.pos.y);
-      if (invSlopeA < invSlopeB) std::swap(invSlopeA, invSlopeB);
-
-      float x0 = c.pos.x;
-      float x1 = c.pos.x;
-      for (fb_pos_t y = y2; y > y1; y--) {
-        fb_pos_t yOff = y * width;
-        fb_pos_t startX = glm::clamp((fb_pos_t) floor(x0), 0, widthMax);
-        fb_pos_t endX = glm::clamp((fb_pos_t) ceil(x1), 0, widthMax);
-
-        float bary_a_y_part = cx_bx * (y - c.pos.y);
-        float bary_c_y_part = ax_cx * (y - c.pos.y);
-
-        for (fb_pos_t x = startX; x < endX; x++) {
-          glm::vec3 bary;
-          bary.x = (by_cy * (x - c.pos.x) + bary_a_y_part) / det;
-          bary.y = (cy_ay * (x - c.pos.x) + bary_c_y_part) / det;
-          bary.z = 1 - bary.x - bary.y;
-
-          vertexShader->interpolate(a, b, c, bary, interpolated);
-
-          color_t color;
-          float depth;
-
-          if (fragmentShader->kernel(interpolated, color, depth)) {
-            drawScreenSpacePixel(x + yOff, color, interpolated.pos.z);
-          }
-        }
-
-        x0 -= invSlopeA;
-        x1 -= invSlopeB;
-      }
-    }
-
-//  //TODO: don't use bounding box, and fill it properly
-//  fb_pos_t
-//    x0 = std::min(a.x, std::min(b.x, c.x)),
-//    x1 = std::max(a.x, std::max(b.x, c.x)),
-//    y0 = std::min(a.y, std::min(b.y, c.y)),
-//    y1 = std::max(a.y, std::max(b.y, c.y));
-//
-//  x0 = std::max(x0, 0);
-//  x1 = std::min(x1, width - 1);
-//  y0 = std::max(y0, 0);
-//  y1 = std::min(y1, height - 1);
-//
-//  for (fb_pos_t y = y0; y <= y1; y++) {
-//    fb_pos_t yOff = y * width;
-//    for (fb_pos_t x = x0; x <= x1; x++) {
-//      ivec2 p(x, y);
-//      bool b1 = vecSign(p, a, b) < 0;
-//      bool b2 = vecSign(p, b, c) < 0;
-//      bool b3 = vecSign(p, c, a) < 0;
-//      if ((b1 == b2) && (b2 == b3)) {
-//        drawScreenSpacePixel(x + yOff, this->currentColor);
-//      }
-//    }
-//  }
-
-    // sort A/B/C by y (we'll draw top then bottom half)
-//  if (a.y > b.y) {
-//    drawScreenSpaceTriFilled(b, a, c);
-//  } else if (b.y > c.y) {
-//    drawScreenSpaceTriFilled(a, c, b);
-//  } else {
-//    for (fb_pos_t y = a.y; y <= c.y; y++) {
-//      this->fillTriTop(a, b, c);
-//    }
-//  }
   }
 
   // RealSpace(tm) (e.g. clip-space)
@@ -435,6 +380,7 @@ private:
   int heightMax;
   framebuffer_t *framebuffer;
   depthbuffer_t *depthbuffer;
+  CullMode cullMode = CullMode::BACK_FACING;
 
   // Helpers
   inline void drawLineLow(fb_pos_t x0, fb_pos_t y0, fb_pos_t x1, fb_pos_t y1) {

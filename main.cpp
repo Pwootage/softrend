@@ -19,6 +19,7 @@
 #include <glm/gtx/transform.hpp>
 
 #define TINYOBJLOADER_IMPLEMENTATION
+
 #include "src/tiny_obj_loader.h"
 
 #ifdef EMSCRIPTEN
@@ -186,14 +187,15 @@ void render() {
   // matricies
   float yaw = (frame) / 200.f;
   float pitch = sin((frame) / 400.f);
-  float dist = 50;
+  float dist = 20;
 
   phongFragmentShader.light_dir = normalize(vec3{0.0, -0.5f, 0.5f});
   phongFragmentShader.light_color_diffuse = {0.8f, 0.8f, 0.8f, 1.f};
-  phongFragmentShader.light_color_ambient = {0.2f, 0.2f, 0.2f, 1.f};
+  phongFragmentShader.light_color_ambient = {0.4f, 0.4f, 0.4f, 1.f};
 
-  yaw = -0.4f;
-  pitch = -0.4f;
+  yaw = 3.f * glm::pi<float>() / 4.f;
+  pitch = 0.4f;
+//    pitch = 0;
 
   // mat4 proj = perspectiveFov(
   //   45.f, (float) FB_WIDTH, (float) FB_HEIGHT, 0.1f, 1000.f
@@ -231,7 +233,7 @@ void render() {
 
 void loadTeapot() {
   string inputfile = "models/teapot.obj";
-  // string inputfile = "models/teapot-low.obj";
+//  string inputfile = "models/teapot-low.obj";
   string error;
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;

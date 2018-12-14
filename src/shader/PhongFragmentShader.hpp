@@ -12,7 +12,7 @@ public:
   glm::vec4 light_color_ambient{0.3f, 0.3f, 0.3f, 1.f};
   glm::vec4 light_color_diffuse{0.6f, 0.6f, 0.6f, 1.f};
 
-  bool kernel(const formats::Pos4ColorNormalTex &frag, glm::vec4 &out_color, float &outDepth) override;
+  bool kernel(const formats::Pos4ColorNormalTex &frag, bool frontFacing, glm::vec4 &out_color, float &outDepth) override;
 };
 
 

@@ -10,7 +10,7 @@ template<typename FragmentType>
 class FragmentShader {
 public:
 
-  virtual bool kernel(const FragmentType &frag, glm::vec4 &out_color, float &outDepth) = 0;
+  virtual bool kernel(const FragmentType &frag, bool frontFacing, glm::vec4 &out_color, float &outDepth) = 0;
 };
 
 };
