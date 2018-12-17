@@ -6,12 +6,21 @@
 //  Copyright © 2018 Pwootage. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#include <stdint.h>
 
-NS_ASSUME_NONNULL_BEGIN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void startUp();
-void render();
-int32_t *getFramebuffer();
+uint64_t frame;
+void softrend_startup(const char* modelPath);
+void softrend_render();
+void *softrend_getFramebuffer();
+uint32_t softrend_getFBWidth();
+uint32_t softrend_getFBHeight();
+float softrend_averageTiming();
+int softrend_getFrame();
 
-NS_ASSUME_NONNULL_END
+#ifdef __cplusplus
+};
+#endif

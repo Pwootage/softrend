@@ -3,9 +3,9 @@
 
 #include "SoftwareRasterizer.hpp"
 
-namespace teapotRender {
+namespace renderTeapot {
 
-void init();
+void init(const char* modelPath);
 void render(size_t frame);
 const softrend::color_t *getFB();
 size_t getFBWidth();

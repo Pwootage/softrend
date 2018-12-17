@@ -13,7 +13,7 @@ using namespace softrend;
 using namespace glm;
 using namespace std;
 
-namespace teapotRender {
+namespace renderTeapot {
 
 constexpr int FB_WIDTH = 1024;
 constexpr int FB_HEIGHT = 1024;
@@ -28,10 +28,10 @@ PhongFragmentShader phongFragmentShader;
 VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
 IndexBuffer teapotIndicies;
 
-void loadTeapot();
+void loadTeapot(const char* modelPath);
 
-void init() {
-  loadTeapot();
+void init(const char* modelPath) {
+  loadTeapot(modelPath);
 
   renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
   renderer->vertexShader = &basicVertShader;
@@ -89,8 +89,9 @@ void render(size_t frame) {
   );
 }
 
-void loadTeapot() {
-  string inputfile = "models/teapot.obj";
+void loadTeapot(const char* modelPath) {
+  string inputfile = modelPath;
+//  string inputfile = "models/teapot.obj";
 //  string inputfile = "models/teapot-low.obj";
   string error;
   tinyobj::attrib_t attrib;
@@ -136,7 +137,7 @@ void loadTeapot() {
     auto offset = teapotIndicies.size();
     teapotIndicies.resize(teapotIndicies.size() + shape.mesh.indices.size());
 
-    for (int i = 0, end = shape.mesh.indices.size(); i < end; i++) {
+    for (size_t i = 0, end = shape.mesh.indices.size(); i < end; i++) {
       auto index = shape.mesh.indices[i];
       teapotIndicies[offset + i] = index.vertex_index;
     }

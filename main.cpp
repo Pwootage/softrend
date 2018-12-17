@@ -41,7 +41,7 @@ double frameTimes[FRAME_AVG_COUNT];
 void mainLoop();
 
 int main() {
-  teapotRender::init();
+  renderTeapot::init("models/teapot.objx");
 
   glfwSetErrorCallback(errorCallback);
 
@@ -99,7 +99,7 @@ void mainLoop() {
 
   {
     auto startT = chrono::steady_clock::now();
-    teapotRender::render(frame);
+    renderTeapot::render(frame);
     auto endT = chrono::steady_clock::now();
     auto time = chrono::duration<double, milli>(endT - startT).count();
     frameTimes[frame % FRAME_AVG_COUNT] = time;
@@ -115,9 +115,9 @@ void mainLoop() {
   }
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-               teapotRender::getFBWidth(), teapotRender::getFBHeight(),
+               renderTeapot::getFBWidth(), renderTeapot::getFBHeight(),
                0, GL_RGBA, GL_FLOAT,
-               teapotRender::getFB());
+               renderTeapot::getFB());
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBegin(GL_QUADS);
