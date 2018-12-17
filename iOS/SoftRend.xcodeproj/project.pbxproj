@@ -15,9 +15,9 @@
 		624D29FF21BE506600EEC8CF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 624D29FD21BE506600EEC8CF /* Main.storyboard */; };
 		624D2A0121BE506700EEC8CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A0021BE506700EEC8CF /* Assets.xcassets */; };
 		624D2A0421BE506700EEC8CF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A0221BE506700EEC8CF /* LaunchScreen.storyboard */; };
-		624D2A1E21BE517E00EEC8CF /* BasicVertexShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624D2A1721BE517E00EEC8CF /* BasicVertexShader.cpp */; };
-		624D2A1F21BE517E00EEC8CF /* PhongFragmentShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624D2A1921BE517E00EEC8CF /* PhongFragmentShader.cpp */; };
 		624D2A2121BE531400EEC8CF /* include in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A2021BE531400EEC8CF /* include */; };
+		6279E7A421C738350050E196 /* src in Resources */ = {isa = PBXBuildFile; fileRef = 6279E7A321C738350050E196 /* src */; };
+		6279E7A921C738C10050E196 /* src in Sources */ = {isa = PBXBuildFile; fileRef = 6279E7A321C738350050E196 /* src */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,18 +31,8 @@
 		624D2A0021BE506700EEC8CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		624D2A0321BE506700EEC8CF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		624D2A0521BE506700EEC8CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		624D2A1221BE517E00EEC8CF /* IndexBuffer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IndexBuffer.hpp; sourceTree = "<group>"; };
-		624D2A1321BE517E00EEC8CF /* VertexBuffer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexBuffer.hpp; sourceTree = "<group>"; };
-		624D2A1421BE517E00EEC8CF /* SoftwareRasterizer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SoftwareRasterizer.hpp; sourceTree = "<group>"; };
-		624D2A1621BE517E00EEC8CF /* VertexTypes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexTypes.hpp; sourceTree = "<group>"; };
-		624D2A1721BE517E00EEC8CF /* BasicVertexShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicVertexShader.cpp; sourceTree = "<group>"; };
-		624D2A1821BE517E00EEC8CF /* PhongFragmentShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PhongFragmentShader.hpp; sourceTree = "<group>"; };
-		624D2A1921BE517E00EEC8CF /* PhongFragmentShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhongFragmentShader.cpp; sourceTree = "<group>"; };
-		624D2A1A21BE517E00EEC8CF /* VertexShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexShader.hpp; sourceTree = "<group>"; };
-		624D2A1B21BE517E00EEC8CF /* FragmentShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FragmentShader.hpp; sourceTree = "<group>"; };
-		624D2A1C21BE517E00EEC8CF /* BasicVertexShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BasicVertexShader.hpp; sourceTree = "<group>"; };
-		624D2A1D21BE517E00EEC8CF /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		624D2A2021BE531400EEC8CF /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../include; sourceTree = "<group>"; };
+		6279E7A321C738350050E196 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../src; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,8 +49,8 @@
 		624D29E721BE506600EEC8CF = {
 			isa = PBXGroup;
 			children = (
+				6279E7A321C738350050E196 /* src */,
 				624D2A2021BE531400EEC8CF /* include */,
-				624D2A0C21BE511E00EEC8CF /* native */,
 				624D29F221BE506600EEC8CF /* SoftRend */,
 				624D29F121BE506600EEC8CF /* Products */,
 			);
@@ -88,49 +78,6 @@
 				624D2A0521BE506700EEC8CF /* Info.plist */,
 			);
 			path = SoftRend;
-			sourceTree = "<group>";
-		};
-		624D2A0C21BE511E00EEC8CF /* native */ = {
-			isa = PBXGroup;
-			children = (
-				624D2A1021BE517E00EEC8CF /* src */,
-			);
-			path = native;
-			sourceTree = "<group>";
-		};
-		624D2A1021BE517E00EEC8CF /* src */ = {
-			isa = PBXGroup;
-			children = (
-				624D2A1121BE517E00EEC8CF /* buffers */,
-				624D2A1421BE517E00EEC8CF /* SoftwareRasterizer.hpp */,
-				624D2A1521BE517E00EEC8CF /* shader */,
-				624D2A1D21BE517E00EEC8CF /* tiny_obj_loader.h */,
-			);
-			name = src;
-			path = ../../src;
-			sourceTree = "<group>";
-		};
-		624D2A1121BE517E00EEC8CF /* buffers */ = {
-			isa = PBXGroup;
-			children = (
-				624D2A1221BE517E00EEC8CF /* IndexBuffer.hpp */,
-				624D2A1321BE517E00EEC8CF /* VertexBuffer.hpp */,
-			);
-			path = buffers;
-			sourceTree = "<group>";
-		};
-		624D2A1521BE517E00EEC8CF /* shader */ = {
-			isa = PBXGroup;
-			children = (
-				624D2A1621BE517E00EEC8CF /* VertexTypes.hpp */,
-				624D2A1721BE517E00EEC8CF /* BasicVertexShader.cpp */,
-				624D2A1821BE517E00EEC8CF /* PhongFragmentShader.hpp */,
-				624D2A1921BE517E00EEC8CF /* PhongFragmentShader.cpp */,
-				624D2A1A21BE517E00EEC8CF /* VertexShader.hpp */,
-				624D2A1B21BE517E00EEC8CF /* FragmentShader.hpp */,
-				624D2A1C21BE517E00EEC8CF /* BasicVertexShader.hpp */,
-			);
-			path = shader;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -196,6 +143,7 @@
 				624D2A0121BE506700EEC8CF /* Assets.xcassets in Resources */,
 				624D2A2121BE531400EEC8CF /* include in Resources */,
 				624D2A0421BE506700EEC8CF /* LaunchScreen.storyboard in Resources */,
+				6279E7A421C738350050E196 /* src in Resources */,
 				624D29F821BE506600EEC8CF /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -207,10 +155,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				624D2A1F21BE517E00EEC8CF /* PhongFragmentShader.cpp in Sources */,
 				624D29FA21BE506600EEC8CF /* GameScene.swift in Sources */,
-				624D2A1E21BE517E00EEC8CF /* BasicVertexShader.cpp in Sources */,
 				624D29FC21BE506600EEC8CF /* GameViewController.swift in Sources */,
+				6279E7A921C738C10050E196 /* src in Sources */,
 				624D29F421BE506600EEC8CF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
