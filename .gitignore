@@ -1,4 +1,4 @@
-/cmake-build-*
-/.idea
+cmake-build-*
+.idea/
 .DS_Store
 xcuserdata

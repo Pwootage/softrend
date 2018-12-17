@@ -64,11 +64,11 @@ public:
   }
 
   // basic members
-  int getWidth() const {
+  size_t getWidth() const {
     return width;
   }
 
-  int getHeight() const {
+  size_t getHeight() const {
     return height;
   }
 
@@ -374,10 +374,10 @@ public:
   FragmentShader<FragmentType> *fragmentShader;
 private:
   color_t currentColor;
-  int width;
-  int height;
-  int widthMax;
-  int heightMax;
+  size_t width;
+  size_t height;
+  size_t widthMax;
+  size_t heightMax;
   framebuffer_t *framebuffer;
   depthbuffer_t *depthbuffer;
   CullMode cullMode = CullMode::BACK_FACING;

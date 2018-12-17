@@ -15,9 +15,9 @@
 		624D29FF21BE506600EEC8CF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 624D29FD21BE506600EEC8CF /* Main.storyboard */; };
 		624D2A0121BE506700EEC8CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A0021BE506700EEC8CF /* Assets.xcassets */; };
 		624D2A0421BE506700EEC8CF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A0221BE506700EEC8CF /* LaunchScreen.storyboard */; };
-		624D2A2121BE531400EEC8CF /* include in Resources */ = {isa = PBXBuildFile; fileRef = 624D2A2021BE531400EEC8CF /* include */; };
-		6279E7A421C738350050E196 /* src in Resources */ = {isa = PBXBuildFile; fileRef = 6279E7A321C738350050E196 /* src */; };
-		6279E7A921C738C10050E196 /* src in Sources */ = {isa = PBXBuildFile; fileRef = 6279E7A321C738350050E196 /* src */; };
+		6279E7B921C739890050E196 /* BasicVertexShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6279E7B221C739890050E196 /* BasicVertexShader.cpp */; };
+		6279E7BA21C739890050E196 /* PhongFragmentShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6279E7B421C739890050E196 /* PhongFragmentShader.cpp */; };
+		6279E7C121C73C4D0050E196 /* SoftwareRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6279E7C021C73C4D0050E196 /* SoftwareRenderer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,8 +31,21 @@
 		624D2A0021BE506700EEC8CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		624D2A0321BE506700EEC8CF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		624D2A0521BE506700EEC8CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		624D2A2021BE531400EEC8CF /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../include; sourceTree = "<group>"; };
-		6279E7A321C738350050E196 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../src; sourceTree = "<group>"; };
+		6279E7AD21C739890050E196 /* IndexBuffer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IndexBuffer.hpp; sourceTree = "<group>"; };
+		6279E7AE21C739890050E196 /* VertexBuffer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexBuffer.hpp; sourceTree = "<group>"; };
+		6279E7AF21C739890050E196 /* SoftwareRasterizer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SoftwareRasterizer.hpp; sourceTree = "<group>"; };
+		6279E7B121C739890050E196 /* VertexTypes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexTypes.hpp; sourceTree = "<group>"; };
+		6279E7B221C739890050E196 /* BasicVertexShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicVertexShader.cpp; sourceTree = "<group>"; };
+		6279E7B321C739890050E196 /* PhongFragmentShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PhongFragmentShader.hpp; sourceTree = "<group>"; };
+		6279E7B421C739890050E196 /* PhongFragmentShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhongFragmentShader.cpp; sourceTree = "<group>"; };
+		6279E7B521C739890050E196 /* VertexShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VertexShader.hpp; sourceTree = "<group>"; };
+		6279E7B621C739890050E196 /* FragmentShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FragmentShader.hpp; sourceTree = "<group>"; };
+		6279E7B721C739890050E196 /* BasicVertexShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BasicVertexShader.hpp; sourceTree = "<group>"; };
+		6279E7B821C739890050E196 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
+		6279E7BD21C73B670050E196 /* SoftRend-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SoftRend-Bridging-Header.h"; sourceTree = "<group>"; };
+		6279E7BF21C73C4D0050E196 /* SoftwareRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoftwareRenderer.h; sourceTree = "<group>"; };
+		6279E7C021C73C4D0050E196 /* SoftwareRenderer.cpp */ = {isa = PBXFileReference; lastKnownFileType = "file.m++"; path = SoftwareRenderer.cpp; sourceTree = "<group>"; };
+		CD4575E2B59F8B5B0FD2F791 /* .editorconfig */ = {isa = PBXFileReference; lastKnownFileType = file.editorconfig; name = .editorconfig; path = SoftRend/.editorconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,12 +62,14 @@
 		624D29E721BE506600EEC8CF = {
 			isa = PBXGroup;
 			children = (
-				6279E7A321C738350050E196 /* src */,
-				624D2A2021BE531400EEC8CF /* include */,
+				6279E7AB21C739890050E196 /* src */,
 				624D29F221BE506600EEC8CF /* SoftRend */,
 				624D29F121BE506600EEC8CF /* Products */,
+				CD4575E2B59F8B5B0FD2F791 /* .editorconfig */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		624D29F121BE506600EEC8CF /* Products */ = {
 			isa = PBXGroup;
@@ -67,6 +82,7 @@
 		624D29F221BE506600EEC8CF /* SoftRend */ = {
 			isa = PBXGroup;
 			children = (
+				6279E7BD21C73B670050E196 /* SoftRend-Bridging-Header.h */,
 				624D29F321BE506600EEC8CF /* AppDelegate.swift */,
 				624D29F521BE506600EEC8CF /* GameScene.sks */,
 				624D29F721BE506600EEC8CF /* Actions.sks */,
@@ -76,8 +92,45 @@
 				624D2A0021BE506700EEC8CF /* Assets.xcassets */,
 				624D2A0221BE506700EEC8CF /* LaunchScreen.storyboard */,
 				624D2A0521BE506700EEC8CF /* Info.plist */,
+				6279E7BF21C73C4D0050E196 /* SoftwareRenderer.h */,
+				6279E7C021C73C4D0050E196 /* SoftwareRenderer.cpp */,
 			);
 			path = SoftRend;
+			sourceTree = "<group>";
+		};
+		6279E7AB21C739890050E196 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				6279E7AC21C739890050E196 /* buffers */,
+				6279E7AF21C739890050E196 /* SoftwareRasterizer.hpp */,
+				6279E7B021C739890050E196 /* shader */,
+				6279E7B821C739890050E196 /* tiny_obj_loader.h */,
+			);
+			name = src;
+			path = ../src;
+			sourceTree = "<group>";
+		};
+		6279E7AC21C739890050E196 /* buffers */ = {
+			isa = PBXGroup;
+			children = (
+				6279E7AD21C739890050E196 /* IndexBuffer.hpp */,
+				6279E7AE21C739890050E196 /* VertexBuffer.hpp */,
+			);
+			path = buffers;
+			sourceTree = "<group>";
+		};
+		6279E7B021C739890050E196 /* shader */ = {
+			isa = PBXGroup;
+			children = (
+				6279E7B121C739890050E196 /* VertexTypes.hpp */,
+				6279E7B221C739890050E196 /* BasicVertexShader.cpp */,
+				6279E7B321C739890050E196 /* PhongFragmentShader.hpp */,
+				6279E7B421C739890050E196 /* PhongFragmentShader.cpp */,
+				6279E7B521C739890050E196 /* VertexShader.hpp */,
+				6279E7B621C739890050E196 /* FragmentShader.hpp */,
+				6279E7B721C739890050E196 /* BasicVertexShader.hpp */,
+			);
+			path = shader;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,9 +194,7 @@
 				624D29FF21BE506600EEC8CF /* Main.storyboard in Resources */,
 				624D29F621BE506600EEC8CF /* GameScene.sks in Resources */,
 				624D2A0121BE506700EEC8CF /* Assets.xcassets in Resources */,
-				624D2A2121BE531400EEC8CF /* include in Resources */,
 				624D2A0421BE506700EEC8CF /* LaunchScreen.storyboard in Resources */,
-				6279E7A421C738350050E196 /* src in Resources */,
 				624D29F821BE506600EEC8CF /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -155,9 +206,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6279E7BA21C739890050E196 /* PhongFragmentShader.cpp in Sources */,
 				624D29FA21BE506600EEC8CF /* GameScene.swift in Sources */,
+				6279E7B921C739890050E196 /* BasicVertexShader.cpp in Sources */,
+				6279E7C121C73C4D0050E196 /* SoftwareRenderer.cpp in Sources */,
 				624D29FC21BE506600EEC8CF /* GameViewController.swift in Sources */,
-				6279E7A921C738C10050E196 /* src in Sources */,
 				624D29F421BE506600EEC8CF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -242,6 +295,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -297,6 +351,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 			};
