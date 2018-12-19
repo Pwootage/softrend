@@ -15,13 +15,15 @@ using namespace std;
 
 namespace renderTeapot {
 
-constexpr int FB_WIDTH = 1024;
-constexpr int FB_HEIGHT = 1024;
+// constexpr int FB_WIDTH = 1024;
+// constexpr int FB_HEIGHT = 1024;
 // constexpr int FB_WIDTH = 512;
 // constexpr int FB_HEIGHT = 512;
 // constexpr int FB_WIDTH = 128;
 // constexpr int FB_HEIGHT = 128;
 
+int FB_WIDTH = 1024;
+int FB_HEIGHT = 1024;
 SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
 BasicVertexShader basicVertShader;
 PhongFragmentShader phongFragmentShader;
@@ -29,9 +31,20 @@ VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
 IndexBuffer teapotIndicies;
 
 void loadTeapot(const char* modelPath);
+void loadTeapotFromSrc(const char *modelSrc, size_t modelLen);
 
-void init(const char* modelPath) {
-  loadTeapot(modelPath);
+void init(const InitData &initData) {
+  if (initData.modelPath) {
+    loadTeapot(initData.modelPath);
+  } else {
+    loadTeapotFromSrc(initData.modelSrc, initData.modelLen);
+  }
+  if (initData.fb_width) {
+    FB_WIDTH = initData.fb_width;
+  }
+  if (initData.fb_width) {
+    FB_WIDTH = initData.fb_height;
+  }
 
   renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
   renderer->vertexShader = &basicVertShader;
@@ -89,10 +102,12 @@ void render(size_t frame) {
   );
 }
 
+void processTeapot(const tinyobj::attrib_t &attrib, const vector<tinyobj::shape_t> &shapes);
+
 void loadTeapot(const char* modelPath) {
   string inputfile = modelPath;
 //  string inputfile = "models/teapot.obj";
-//  string inputfile = "models/teapot-low.obj";
+//  string inputfile = "models/teapot_low.obj";
   string error;
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -106,6 +121,43 @@ void loadTeapot(const char* modelPath) {
     cerr << error << endl;
   }
 
+  processTeapot(attrib, shapes);
+}
+
+void loadTeapotFromSrc(const char* modelSrc, size_t modelLen) {
+  struct membuf: std::streambuf {
+    membuf(char const* base, size_t size) {
+      char* p(const_cast<char*>(base));
+      this->setg(p, p, p + size);
+    }
+  };
+  struct imemstream: virtual membuf, std::istream {
+    imemstream(char const* base, size_t size)
+      : membuf(base, size)
+      , std::istream(static_cast<std::streambuf*>(this)) {
+    }
+  };
+
+  imemstream inStream(modelSrc, modelLen);
+//  string inputfile = "models/teapot.obj";
+//  string inputfile = "models/teapot_low.obj";
+  string error;
+  tinyobj::attrib_t attrib;
+  std::vector<tinyobj::shape_t> shapes;
+  std::vector<tinyobj::material_t> materials;
+  if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, &inStream, nullptr, true)) {
+    cerr << error << endl;
+    exit(1);
+  }
+
+  if (!error.empty()) {
+    cerr << error << endl;
+  }
+
+  processTeapot(attrib, shapes);
+}
+
+void processTeapot(const tinyobj::attrib_t &attrib, const vector<tinyobj::shape_t> &shapes) {
   random_device rd;
   mt19937 rng(rd());
   uniform_real_distribution<float> dist(0, 1);

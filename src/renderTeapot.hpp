@@ -5,7 +5,15 @@
 
 namespace renderTeapot {
 
-void init(const char* modelPath);
+struct InitData {
+  const char* modelPath = nullptr;
+  const char* modelSrc = nullptr;
+  size_t modelLen = 0;
+  size_t fb_width = 0;
+  size_t fb_height = 0;
+};
+
+void init(const InitData &initData);
 void render(size_t frame);
 const softrend::color_t *getFB();
 size_t getFBWidth();

@@ -140,8 +140,8 @@ public:
       if (x0 > x1) {
         std::swap(x0, x1);
       }
-      x0 = std::max(0, x0);
-      x1 = std::min(this->widthMax, x1);
+      x0 = glm::max(0, x0);
+      x1 = glm::min(this->widthMax, x1);
       fb_pos_t yOff = y0 * width;
       for (fb_pos_t x = x0; x <= x1; x++) {
         this->drawScreenSpacePixel(x + yOff, this->currentColor);
@@ -374,10 +374,10 @@ public:
   FragmentShader<FragmentType> *fragmentShader;
 private:
   color_t currentColor;
-  size_t width;
-  size_t height;
-  size_t widthMax;
-  size_t heightMax;
+  fb_pos_t width;
+  fb_pos_t height;
+  fb_pos_t widthMax;
+  fb_pos_t heightMax;
   framebuffer_t *framebuffer;
   depthbuffer_t *depthbuffer;
   CullMode cullMode = CullMode::BACK_FACING;

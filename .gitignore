@@ -2,3 +2,7 @@ cmake-build-*
 .idea/
 .DS_Store
 xcuserdata
+*.elf
+*.gba
+*.sav
+/gba/build/

@@ -41,7 +41,10 @@ double frameTimes[FRAME_AVG_COUNT];
 void mainLoop();
 
 int main() {
-  renderTeapot::init("models/teapot.obj");
+  renderTeapot::InitData initData;
+  initData.modelPath = "models/teapot.obj";
+
+  renderTeapot::init(initData);
 
   glfwSetErrorCallback(errorCallback);
 
