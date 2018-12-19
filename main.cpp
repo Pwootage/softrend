@@ -43,6 +43,8 @@ void mainLoop();
 int main() {
   renderTeapot::InitData initData;
   initData.modelPath = "models/teapot.obj";
+  // initData.fb_width = 60;
+  // initData.fb_height = 40;
 
   renderTeapot::init(initData);
 

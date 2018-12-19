@@ -42,8 +42,8 @@ void init(const InitData &initData) {
   if (initData.fb_width) {
     FB_WIDTH = initData.fb_width;
   }
-  if (initData.fb_width) {
-    FB_WIDTH = initData.fb_height;
+  if (initData.fb_height) {
+    FB_HEIGHT = initData.fb_height;
   }
 
   renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
