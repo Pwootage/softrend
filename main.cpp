@@ -41,7 +41,7 @@ double frameTimes[FRAME_AVG_COUNT];
 void mainLoop();
 
 int main() {
-  renderTeapot::init("models/teapot.objx");
+  renderTeapot::init("models/teapot.obj");
 
   glfwSetErrorCallback(errorCallback);
 
