@@ -46,12 +46,16 @@ if (NOT EMSCRIPTEN)
 endif ()
 
 # Files
+add_subdirectory(gba)
+
 include_directories(include)
 
 set(SOURCE_FILES
         main.cpp
         src/shader/BasicVertexShader.cpp
-        src/shader/PhongFragmentShader.cpp src/renderTeapot.cpp)
+        src/shader/PhongFragmentShader.cpp
+        src/renderTeapot.cpp
+        src/buffers/ColorTFramebuffer.cpp)
 
 set(HEADER_FILES
         src/SoftwareRasterizer.hpp
@@ -62,11 +66,13 @@ set(HEADER_FILES
         src/shader/PhongFragmentShader.hpp
         src/buffers/VertexBuffer.hpp
         src/buffers/IndexBuffer.hpp
+        src/buffers/Framebuffer.hpp
+        src/buffers/ColorTFramebuffer.hpp
         src/renderTeapot.hpp)
 
 set(RESOURCE_FILES
         models/teapot.obj
-        models/teapot-low.obj
+        models/teapot_low.obj
         )
 
 # copy our resources

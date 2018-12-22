@@ -12,6 +12,7 @@
 #include "src/SoftwareRasterizer.hpp"
 #include "src/buffers/VertexBuffer.hpp"
 #include "src/buffers/IndexBuffer.hpp"
+#include "src/buffers/ColorTFramebuffer.hpp"
 #include "src/shader/VertexTypes.hpp"
 #include "src/shader/BasicVertexShader.hpp"
 #include "src/shader/PhongFragmentShader.hpp"
@@ -34,17 +35,24 @@ void errorCallback(int error, const char *description) {
 GLuint texID;
 uint64_t frame = 0;
 
+constexpr int FB_WIDTH = 1024;
+constexpr int FB_HEIGHT = 1024;
+// constexpr int FB_WIDTH = 512;
+// constexpr int FB_HEIGHT = 512;
+// constexpr int FB_WIDTH = 128;
+// constexpr int FB_HEIGHT = 128;
+
 GLFWwindow *window;
 constexpr int FRAME_AVG_COUNT = 60;
 double frameTimes[FRAME_AVG_COUNT];
+ColorTFramebuffer framebuffer(FB_WIDTH, FB_HEIGHT);
 
 void mainLoop();
 
 int main() {
   renderTeapot::InitData initData;
   initData.modelPath = "models/teapot.obj";
-  // initData.fb_width = 60;
-  // initData.fb_height = 40;
+  initData.framebuffer = &framebuffer;
 
   renderTeapot::init(initData);
 
@@ -122,7 +130,7 @@ void mainLoop() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                renderTeapot::getFBWidth(), renderTeapot::getFBHeight(),
                0, GL_RGBA, GL_FLOAT,
-               renderTeapot::getFB());
+               framebuffer.getRawColorBuffer());
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBegin(GL_QUADS);

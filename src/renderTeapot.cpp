@@ -7,6 +7,7 @@
 #include "shader/PhongFragmentShader.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
+
 #include "tiny_obj_loader.h"
 
 using namespace softrend;
@@ -15,22 +16,16 @@ using namespace std;
 
 namespace renderTeapot {
 
-// constexpr int FB_WIDTH = 1024;
-// constexpr int FB_HEIGHT = 1024;
-// constexpr int FB_WIDTH = 512;
-// constexpr int FB_HEIGHT = 512;
-// constexpr int FB_WIDTH = 128;
-// constexpr int FB_HEIGHT = 128;
 
-int FB_WIDTH = 1024;
-int FB_HEIGHT = 1024;
+
 SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
 BasicVertexShader basicVertShader;
 PhongFragmentShader phongFragmentShader;
 VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
 IndexBuffer teapotIndicies;
 
-void loadTeapot(const char* modelPath);
+void loadTeapot(const char *modelPath);
+
 void loadTeapotFromSrc(const char *modelSrc, size_t modelLen);
 
 void init(const InitData &initData) {
@@ -39,22 +34,14 @@ void init(const InitData &initData) {
   } else {
     loadTeapotFromSrc(initData.modelSrc, initData.modelLen);
   }
-  if (initData.fb_width) {
-    FB_WIDTH = initData.fb_width;
-  }
-  if (initData.fb_height) {
-    FB_HEIGHT = initData.fb_height;
-  }
 
-  renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(FB_WIDTH, FB_HEIGHT);
+  initData.framebuffer->clear({0.f,0.f,0.f,0.f}, true, true);
+  renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(initData.framebuffer);
   renderer->vertexShader = &basicVertShader;
   renderer->fragmentShader = &phongFragmentShader;
 }
 
 void render(size_t frame) {
-  renderer->setCurrentColor({0, 0, 0, 1});
-  renderer->clear();
-
   // matricies
   float yaw = (frame) / 200.f;
   float pitch = sin((frame) / 400.f);
@@ -104,7 +91,7 @@ void render(size_t frame) {
 
 void processTeapot(const tinyobj::attrib_t &attrib, const vector<tinyobj::shape_t> &shapes);
 
-void loadTeapot(const char* modelPath) {
+void loadTeapot(const char *modelPath) {
   string inputfile = modelPath;
 //  string inputfile = "models/teapot.obj";
 //  string inputfile = "models/teapot_low.obj";
@@ -124,17 +111,16 @@ void loadTeapot(const char* modelPath) {
   processTeapot(attrib, shapes);
 }
 
-void loadTeapotFromSrc(const char* modelSrc, size_t modelLen) {
-  struct membuf: std::streambuf {
-    membuf(char const* base, size_t size) {
-      char* p(const_cast<char*>(base));
+void loadTeapotFromSrc(const char *modelSrc, size_t modelLen) {
+  struct membuf : std::streambuf {
+    membuf(char const *base, size_t size) {
+      char *p(const_cast<char *>(base));
       this->setg(p, p, p + size);
     }
   };
-  struct imemstream: virtual membuf, std::istream {
-    imemstream(char const* base, size_t size)
-      : membuf(base, size)
-      , std::istream(static_cast<std::streambuf*>(this)) {
+  struct imemstream : virtual membuf, std::istream {
+    imemstream(char const *base, size_t size)
+      : membuf(base, size), std::istream(static_cast<std::streambuf *>(this)) {
     }
   };
 
@@ -198,7 +184,7 @@ void processTeapot(const tinyobj::attrib_t &attrib, const vector<tinyobj::shape_
   cout << "Loaded " << teapotVerts.size() << " verts, " << teapotIndicies.size() << " indicies" << endl;
 }
 
-const softrend::color_t *getFB() {
+const Framebuffer *getFB() {
   return renderer->getFramebuffer();
 }
 

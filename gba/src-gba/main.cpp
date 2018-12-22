@@ -6,12 +6,17 @@
 #include <stdio.h>
 #include <chrono>
 #include <numeric>
+#include <sstream>
+#include <iomanip>
 
 #include "../src/SoftwareRasterizer.hpp"
 #include "../src/renderTeapot.hpp"
+#include "GBAMode3Framebuffer.hpp"
 #include "teapot_low_obj.h"
+#include "amiga_fnt.h"
 
 using namespace std;
+using namespace softrend;
 
 double s = 0;
 double lastStart = 0;
@@ -21,7 +26,20 @@ constexpr int FRAME_AVG_COUNT = 60;
 double frameTimes[FRAME_AVG_COUNT];
 
 void timerHandler() {
-  s += 0.001;
+  // it's not quite 1ms
+  s += 0.000999987125;
+}
+
+void drawChar(int x, int y, char c) {
+  int offset = c * 8;
+  for (int y1 = 0; y1 < 8; y1++) {
+    u8 charLine = amiga_fnt[offset + y1];
+    for (int x1 = 0; x1 < 8; x1++) {
+      bool set = (charLine & (1 << (7 - x1))) > 0;
+      u16 color = set ? (u16) 0x1f : (u16) 0;
+      MODE3_FB[y1 + y][x1 + x] = RGB5(color, color, color);
+    }
+  }
 }
 
 void updateTimerText() {
@@ -34,10 +52,44 @@ void updateTimerText() {
     end(frameTimes),
     0.0
   ) / (double) FRAME_AVG_COUNT;
-  printf("\x1b[12;00HAvg %.2lfs    ", avg);
 
-  printf("\x1b[13;00Hrun time: %dh %02dm %02.2lfs    ", hours, minutes, glm::mod(s, 60.));
+  {
+    stringstream ss;
+    ss << setprecision(4);
+    ss << "Avg " << avg << "s";
+    ss << " Frame #" << frame;
+    string str = ss.str();
+
+    int x = 0;
+    int y = 160 - 8;
+    for (size_t i = 0; i < str.size(); i++) {
+      drawChar(x, y, str[i]);
+      x += 8;
+      if (x > 240) x = 0;
+    }
+  }
+
+  {
+    stringstream ss;
+    ss << setprecision(4);
+    ss << "Run time: ";
+    ss << hours << "h ";
+    ss << minutes << "m ";
+    ss << glm::mod(s, 60.) << "s";
+
+    string str = ss.str();
+
+    int x = 0;
+    int y = 160 - 8 * 2;
+    for (size_t i = 0; i < str.size(); i++) {
+      drawChar(x, y, str[i]);
+      x += 8;
+      if (x > 240) x = 0;
+    }
+  }
 }
+
+GBAMode3Framebuffer framebuffer;
 
 int main(void) {
 //---------------------------------------------------------------------------------
@@ -58,13 +110,7 @@ int main(void) {
   renderTeapot::InitData initData;
   initData.modelSrc = (const char *) teapot_low_obj;
   initData.modelLen = teapot_low_obj_size;
-  // gba is 240x160 but we don't have enough ram SO
-  // 240x160x5x4 = 768000
-  // 120x80x5x4 = 192000 (MIGHT fight)
-  // 90*60x5x4 = 108000 (fine)
-  // 60x40x5x4 = 48000 (definitely fine)
-  initData.fb_width = 90;
-  initData.fb_height = 60;
+  initData.framebuffer = &framebuffer;
 
   renderTeapot::init(initData);
 
@@ -90,52 +136,16 @@ int main(void) {
     VBlankIntrWait();
     printf("\x1b[9;0H%u start", frame);
 
+    framebuffer.clear({0,0,0,0}, true, true);
+
+    updateTimerText();
+
     lastStart = s;
     auto startT = s;
     renderTeapot::render(frame);
     auto endT = s;
     auto time = endT - startT;
     frameTimes[frame % FRAME_AVG_COUNT] = time;
-
-    printf("\x1b[10;0H%u end", frame);
-    printf("\x1b[11;00HFrame time: %.2lfs    ", time);
-
-    updateTimerText();
-
-    // draw the image to the top right
-    int w = renderTeapot::getFBWidth();
-    int h = renderTeapot::getFBHeight();
-    int screenOffX = 0;
-    int screenOffY = 0;
-    const softrend::color_t *fb = renderTeapot::getFB();
-
-    float xRatio = (float)w / 240.f;
-    float yRatio = (float)h / 160.f;
-
-    for (int y = 0; y < 160; y++) {
-      for (int x = 0; x < 240; x++) {
-        int fb_pos_x = x * xRatio;
-        int fb_pos_y = y * yRatio;
-        int ind = fb_pos_y * w + fb_pos_x;
-        softrend::color_t color = fb[ind];
-
-        u16 r = color.r * 0x1F;
-        u16 g = color.g * 0x1F;
-        u16 b = color.b * 0x1F;
-
-        r = glm::clamp(r, (u16)0, (u16)0x1F);
-        g = glm::clamp(r, (u16)0, (u16)0x1F);
-        b = glm::clamp(r, (u16)0, (u16)0x1F);
-
-        MODE3_FB[y + screenOffY][x + screenOffX] = RGB5(r,g,b);
-      }
-    }
-
-    for (int y = 0; y < h; y++) {
-      for (int x = 0; x < w; x++) {
-
-      }
-    }
 
     frame++;
   }

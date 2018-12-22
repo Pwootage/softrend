@@ -25,7 +25,7 @@ TARGET		:=	$(shell basename $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	src src/shader src/buffers src-gba
 INCLUDES	:=  include include/glm
-DATA		:=  models
+DATA		:=  models font
 MUSIC		:=
 GRAPHICS	:=
 
@@ -161,6 +161,11 @@ soundbank.bin soundbank.h : $(AUDIOFILES)
 	@$(bin2o)
 
 %.obj.o	%_obj.h :	%.obj
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	@$(bin2o)
+
+%.fnt.o	%_fnt.h :	%.fnt
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
