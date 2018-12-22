@@ -43,7 +43,7 @@ void drawChar(int x, int y, char c) {
 
 void updateTimerText() {
   double s = MS_PER_TICK * tick;
-  int seconds_int = s;
+  int seconds_int = static_cast<int>(s);
   int minutes = (seconds_int / 60) % 60;
   int hours = (seconds_int / 60 / 60);
 
@@ -98,11 +98,9 @@ int main(void) {
   // since the default dispatcher handles the bios flags no vblank handler
   // is required
   irqInit();
-  irqEnable(IRQ_VBLANK);
+  // irqEnable(IRQ_VBLANK);
   irqEnable(IRQ_TIMER2);
-  // irqEnable(IRQ_TIMER3);
   irqSet(IRQ_TIMER2, &timerHandler);
-  // irqSet(IRQ_TIMER3, &updateTimerText);
 
   SetMode(MODE_3 | BG2_ON);
   // consoleDemoInit();
@@ -122,20 +120,12 @@ int main(void) {
     frameTimes[i] = 1.;
   }
 
-  // set up some timer registeres
-  // frame timing: 280896 cycles per frame
-  // 280896/64 = 4389
-  // REG_TM3CNT_L = -4389;
-  // REG_TM3CNT_H = TIMER_IRQ | TIMER_START | 1; // 1 = 64 cycles
-
   // 2^24 hz, 2^24/1000 = 16777.216 ~= 0x4189 cycles per ms
   REG_TM2CNT_L = -0x4189; // 1 << 24 hz / (1024/2^10) = 2^14  = 0x4000 per sec, / 1000c
   REG_TM2CNT_H = TIMER_IRQ | TIMER_START | 0; // 0 = 1 cycle
 
   while (1) {
-    VBlankIntrWait();
-    printf("\x1b[9;0H%u start", frame);
-
+    // VBlankIntrWait();
     framebuffer.clear({0,0,0,0}, true, true);
 
     updateTimerText();
