@@ -92,11 +92,6 @@ void updateTimerText() {
 GBAMode3Framebuffer framebuffer;
 
 int main(void) {
-//---------------------------------------------------------------------------------
-
-  // the vblank interrupt must be enabled for VBlankIntrWait() to work
-  // since the default dispatcher handles the bios flags no vblank handler
-  // is required
   irqInit();
   // irqEnable(IRQ_VBLANK);
   irqEnable(IRQ_TIMER2);
@@ -112,10 +107,6 @@ int main(void) {
 
   renderTeapot::init(initData);
 
-  // ansi escape sequence to clear screen and home cursor
-  // /x1b[line;columnH
-  printf("\x1b[2J");
-
   for (int i = 0; i < FRAME_AVG_COUNT; i++) {
     frameTimes[i] = 1.;
   }
@@ -125,7 +116,6 @@ int main(void) {
   REG_TM2CNT_H = TIMER_IRQ | TIMER_START | 0; // 0 = 1 cycle
 
   while (1) {
-    // VBlankIntrWait();
     framebuffer.clear({0,0,0,0}, true, true);
 
     updateTimerText();
