@@ -18,16 +18,15 @@
 using namespace std;
 using namespace softrend;
 
-double s = 0;
-double lastStart = 0;
+constexpr double MS_PER_TICK = 0.000999987125;
+size_t tick = 0;
 
 size_t frame = 0;
 constexpr int FRAME_AVG_COUNT = 60;
 double frameTimes[FRAME_AVG_COUNT];
 
 void timerHandler() {
-  // it's not quite 1ms
-  s += 0.000999987125;
+  tick++;
 }
 
 void drawChar(int x, int y, char c) {
@@ -43,6 +42,7 @@ void drawChar(int x, int y, char c) {
 }
 
 void updateTimerText() {
+  double s = MS_PER_TICK * tick;
   int seconds_int = s;
   int minutes = (seconds_int / 60) % 60;
   int hours = (seconds_int / 60 / 60);
@@ -140,12 +140,11 @@ int main(void) {
 
     updateTimerText();
 
-    lastStart = s;
-    auto startT = s;
+    auto startT = tick;
     renderTeapot::render(frame);
-    auto endT = s;
+    auto endT = tick;
     auto time = endT - startT;
-    frameTimes[frame % FRAME_AVG_COUNT] = time;
+    frameTimes[frame % FRAME_AVG_COUNT] = time * MS_PER_TICK;
 
     frame++;
   }
