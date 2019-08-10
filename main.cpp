@@ -12,7 +12,7 @@
 #include "src/SoftwareRasterizer.hpp"
 #include "src/buffers/VertexBuffer.hpp"
 #include "src/buffers/IndexBuffer.hpp"
-#include "src/buffers/ColorTFramebuffer.hpp"
+#include "src/buffers/ArrayFramebuffer.hpp"
 #include "src/shader/VertexTypes.hpp"
 #include "src/shader/BasicVertexShader.hpp"
 #include "src/shader/PhongFragmentShader.hpp"
@@ -45,7 +45,7 @@ constexpr int FB_HEIGHT = 1024;
 GLFWwindow *window;
 constexpr int FRAME_AVG_COUNT = 60;
 double frameTimes[FRAME_AVG_COUNT];
-ColorTFramebuffer framebuffer(FB_WIDTH, FB_HEIGHT);
+F32ColorFramebuffer framebuffer(FB_WIDTH, FB_HEIGHT);
 
 void mainLoop();
 

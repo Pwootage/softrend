@@ -11,26 +11,44 @@
 
 namespace softrend {
 
-#define F32_COLOR
-#ifdef F32_COLOR
-using color_t = glm::aligned_f32vec4;
-#else
-using color_t = glm::aligned_u8vec4;
-#endif
+// #define F32_COLOR
+// #ifdef F32_COLOR
+// using color_t = glm::aligned_f32vec4;
+// #else
+// using color_t = glm::aligned_u8vec4;
+// #endif
+
+using f32_color_t __attribute__((aligned(16))) = glm::aligned_f32vec4;
+using u8_color_t __attribute__((aligned(4))) = glm::aligned_u8vec4;
+
+namespace color_conversion {
+template<typename color_t>
+struct no_convert {
+  color_t &operator()(color_t &color) const {
+    return color;
+  };
+};
+}
+
 
 // using framebuffer_t = color_t;
 using depthbuffer_t = float;
 using fb_vec_t = glm::aligned_ivec2;
 using fb_pos_t = fb_vec_t::value_type;
 
+template<typename color_t>
 class Framebuffer {
 public:
   virtual void putPixel(fb_pos_t pos, color_t color, float depth) = 0;
+
   virtual void clear(const color_t &clearColor, bool colorBuffer, bool depthBuffer) = 0;
 
-  virtual color_t getPixel(const fb_pos_t &pos) const = 0;
+  virtual const color_t &getPixel(const fb_pos_t &pos) const = 0;
+
   virtual float getDepth(fb_pos_t pos) const = 0;
+
   virtual fb_pos_t getWidth() const = 0;
+
   virtual fb_pos_t getHeight() const = 0;
 };
 

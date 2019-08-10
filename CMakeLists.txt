@@ -55,7 +55,7 @@ set(SOURCE_FILES
         src/shader/BasicVertexShader.cpp
         src/shader/PhongFragmentShader.cpp
         src/renderTeapot.cpp
-        src/buffers/ColorTFramebuffer.cpp)
+        )
 
 set(HEADER_FILES
         src/SoftwareRasterizer.hpp
@@ -67,7 +67,7 @@ set(HEADER_FILES
         src/buffers/VertexBuffer.hpp
         src/buffers/IndexBuffer.hpp
         src/buffers/Framebuffer.hpp
-        src/buffers/ColorTFramebuffer.hpp
+        src/buffers/ArrayFramebuffer.hpp
         src/renderTeapot.hpp)
 
 set(RESOURCE_FILES

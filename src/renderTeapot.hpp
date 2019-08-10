@@ -8,13 +8,13 @@ namespace renderTeapot {
 struct InitData {
   const char* modelPath = nullptr;
   const char* modelSrc = nullptr;
-  softrend::Framebuffer *framebuffer = nullptr;
+  softrend::Framebuffer<softrend::f32_color_t> *framebuffer = nullptr;
   size_t modelLen = 0;
 };
 
 void init(const InitData &initData);
 void render(size_t frame);
-const softrend::Framebuffer *getFB();
+const softrend::Framebuffer<softrend::f32_color_t> *getFB();
 size_t getFBWidth();
 size_t getFBHeight();
 

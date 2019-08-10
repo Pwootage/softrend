@@ -38,12 +38,12 @@ enum class CullMode {
 
 // hold on to something, we're about to template like nothing you've seen before
 template<
-  typename VertexType, typename FragmentType
+  typename VertexType, typename FragmentType, typename color_t
 >
 class SoftwareRasterizer {
 public:
 
-  SoftwareRasterizer(Framebuffer *framebuffer) {
+  SoftwareRasterizer(Framebuffer<color_t> *framebuffer) {
     this->framebuffer = framebuffer;
   }
 
@@ -56,7 +56,7 @@ public:
     return this->framebuffer->getHeight();
   }
 
-  const Framebuffer *getFramebuffer() const {
+  const Framebuffer<color_t> *getFramebuffer() const {
     return framebuffer;
   }
 
@@ -338,7 +338,7 @@ public:
   FragmentShader<FragmentType> *fragmentShader;
 private:
   color_t currentColor;
-  Framebuffer *framebuffer;
+  Framebuffer<color_t> *framebuffer;
   depthbuffer_t *depthbuffer;
   CullMode cullMode = CullMode::BACK_FACING;
 

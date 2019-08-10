@@ -18,7 +18,7 @@ namespace renderTeapot {
 
 
 
-SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex> *renderer;
+SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex, f32_color_t> *renderer;
 BasicVertexShader basicVertShader;
 PhongFragmentShader phongFragmentShader;
 VertexBuffer<formats::Pos4ColorNormalTex> teapotVerts;
@@ -36,7 +36,11 @@ void init(const InitData &initData) {
   }
 
   initData.framebuffer->clear({0.f,0.f,0.f,0.f}, true, true);
-  renderer = new SoftwareRasterizer<formats::Pos4ColorNormalTex, formats::Pos4ColorNormalTex>(initData.framebuffer);
+  renderer = new SoftwareRasterizer<
+      formats::Pos4ColorNormalTex,
+      formats::Pos4ColorNormalTex,
+      f32_color_t
+      >(initData.framebuffer);
   renderer->vertexShader = &basicVertShader;
   renderer->fragmentShader = &phongFragmentShader;
 }
@@ -184,7 +188,7 @@ void processTeapot(const tinyobj::attrib_t &attrib, const vector<tinyobj::shape_
   cout << "Loaded " << teapotVerts.size() << " verts, " << teapotIndicies.size() << " indicies" << endl;
 }
 
-const Framebuffer *getFB() {
+const Framebuffer<f32_color_t> *getFB() {
   return renderer->getFramebuffer();
 }
 
