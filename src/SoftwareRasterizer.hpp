@@ -203,7 +203,7 @@ public:
 
           float depth;
           color_t color;
-          if (fragmentShader->kernel(interpolated, false, color, depth)) {
+          if (fragmentShader->kernel(interpolated, frontFacing, color, depth)) {
             drawScreenSpacePixel(yOff + (p.x >> subPixelScale), color, depth);
           }
         }
