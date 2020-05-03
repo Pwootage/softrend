@@ -18,15 +18,48 @@ namespace softrend {
 // using color_t = glm::aligned_u8vec4;
 // #endif
 
-using f32_color_t __attribute__((aligned(16))) = glm::aligned_f32vec4;
-using u8_color_t __attribute__((aligned(4))) = glm::aligned_u8vec4;
+using f32_color_t __attribute__((aligned(16))) =
+glm::aligned_f32vec4;
+using u8_color_t __attribute__((aligned(4))) =
+glm::aligned_u8vec4;
 
 namespace color_conversion {
 template<typename color_t>
 struct no_convert {
-  color_t &operator()(color_t &color) const {
+  const color_t &operator()(const color_t &color) const {
     return color;
   };
+};
+
+inline float u8_to_f32(uint8_t value) {
+  return (float) value / 255.f;
+}
+
+inline uint8_t f32_to_u8(float value) {
+  return (uint8_t)(glm::clamp<float>(value, 0, 1) * 255.f);
+//  return (uint8_t)(value * 255.f);
+}
+
+struct u8_f32_convert {
+  f32_color_t operator()(const u8_color_t &color) const {
+    return {
+        u8_to_f32(color.r),
+        u8_to_f32(color.g),
+        u8_to_f32(color.b),
+        u8_to_f32(color.a)
+    };
+  }
+};
+
+struct f32_u8_convert {
+  u8_color_t operator()(const f32_color_t &color) const {
+    return {
+        f32_to_u8(color.r),
+        f32_to_u8(color.g),
+        f32_to_u8(color.b),
+        f32_to_u8(color.a)
+    };
+  }
 };
 }
 
@@ -43,7 +76,7 @@ public:
 
   virtual void clear(const color_t &clearColor, bool colorBuffer, bool depthBuffer) = 0;
 
-  virtual const color_t &getPixel(const fb_pos_t &pos) const = 0;
+  virtual color_t getPixel(const fb_pos_t &pos) const = 0;
 
   virtual float getDepth(fb_pos_t pos) const = 0;
 

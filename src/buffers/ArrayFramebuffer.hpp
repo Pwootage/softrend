@@ -17,12 +17,12 @@ public:
     // colorBuffer = new array_t[width * height];
 #ifdef __APPLE__
     void *ptr = nullptr;
-    posix_memalign(&ptr, sizeof(array_t), sizeof(array_t) * width * height);
+    posix_memalign(&ptr, 32, sizeof(array_t) * width * height);
     colorBuffer = static_cast<array_t*>(ptr);
 #else
-    colorBuffer = static_cast<array_t *>(std::aligned_alloc(sizeof(array_t), sizeof(array_t) * width * height));
+    colorBuffer = static_cast<array_t *>(std::aligned_alloc(32), sizeof(array_t) * width * height));
 #endif
-    printf("align: %lx, %lx\n", alignof(color_t), reinterpret_cast<uint64_t>(colorBuffer) & 0xFFFFu);
+    printf("align: %lx, %llx\n", alignof(color_t), reinterpret_cast<uint64_t>(colorBuffer) & 0xFFFFu);
     depthBuffer = static_cast<float *>(malloc(sizeof(float) * width * height));
   }
 
@@ -56,12 +56,12 @@ public:
   void clear(const color_t &clearColor, bool clearColorBuffer, bool clearDepthBuffer) override {
     float clearDepth = std::numeric_limits<float>::quiet_NaN();
     for (fb_pos_t i = 0; i < width * height; i++) {
-      if (clearColorBuffer) this->colorBuffer[i] = clearColor;
+      if (clearColorBuffer) this->colorBuffer[i] = convToArray(clearColor);
       if (clearDepthBuffer) this->depthBuffer[i] = clearDepth;
     }
   }
 
-  [[nodiscard]] const color_t &getPixel(const fb_pos_t &pos) const override {
+  [[nodiscard]] color_t getPixel(const fb_pos_t &pos) const override {
     return convToColor(colorBuffer[pos]);
   }
 
@@ -77,7 +77,7 @@ public:
     return height;
   }
 
-  [[nodiscard]] const color_t *getRawColorBuffer() const {
+  [[nodiscard]] const array_t *getRawColorBuffer() const {
     return colorBuffer;
   }
 
@@ -99,6 +99,13 @@ using F32ColorFramebuffer = ArrayFramebuffer<
     f32_color_t,
     color_conversion::no_convert<f32_color_t>,
     color_conversion::no_convert<f32_color_t>
+>;
+
+using U8ColorFramebuffer = ArrayFramebuffer<
+    f32_color_t,
+    u8_color_t,
+    color_conversion::f32_u8_convert,
+    color_conversion::u8_f32_convert
 >;
 
 }
