@@ -45,15 +45,17 @@ public:
 
   SoftwareRasterizer(Framebuffer<color_t> *framebuffer) {
     this->framebuffer = framebuffer;
+    this->widthCache = framebuffer->getWidth();
+    this->heightCache = framebuffer->getHeight();
   }
 
   // basic members
   inline fb_pos_t getWidth() const {
-    return this->framebuffer->getWidth();
+    return this->widthCache;
   }
 
   inline size_t getHeight() const {
-    return this->framebuffer->getHeight();
+    return this->heightCache;
   }
 
   const Framebuffer<color_t> *getFramebuffer() const {
@@ -341,6 +343,8 @@ private:
   Framebuffer<color_t> *framebuffer;
   depthbuffer_t *depthbuffer;
   CullMode cullMode = CullMode::BACK_FACING;
+  fb_pos_t widthCache;
+  fb_pos_t heightCache;
 
   // Helpers
   inline void drawLineLow(fb_pos_t x0, fb_pos_t y0, fb_pos_t x1, fb_pos_t y1) {

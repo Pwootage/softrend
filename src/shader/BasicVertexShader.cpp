@@ -16,7 +16,6 @@ void BasicVertexShader::interpolate(const formats::Pos4ColorNormalTex &a,
                                     const formats::Pos4ColorNormalTex &c,
                                     const glm::vec3 &barycentric,
                                     formats::Pos4ColorNormalTex &out) {
-  // ignore pos for now...
   out.pos = a.pos * barycentric.x + b.pos * barycentric.y + c.pos * barycentric.z;
   out.color = a.color * barycentric.x + b.color * barycentric.y + c.color * barycentric.z;
   // out.color = a.color;
