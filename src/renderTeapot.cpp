@@ -85,6 +85,9 @@ void render(size_t frame) {
   //   clipSpace[i].pos = mult * clipSpace[i].pos;
   // }
 
+//  renderer->setCurrentColor({0, 0, 0, 0});
+//  renderer->clear(true, true);
+
   renderer->setCurrentColor({0, 1, 0, 1});
   renderer->drawIndexed(
     DrawMode::TRAINGLES,

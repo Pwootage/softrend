@@ -87,14 +87,15 @@ class GameScene: SKScene {
     label.text = "Frame \(f) Avg \(tFmt)ms"
   }
 
+  var i = 0;
   private func updateTexture() {
     let fb = softrend_getFramebuffer()
     let w = Int(softrend_getFBWidth())
     let h = Int(softrend_getFBHeight())
 
     let count = Int(w * h) // w * h * 4 colors (rgba)
-    let fbCopy = UnsafeMutablePointer<float4>.allocate(capacity: count)
-    fbCopy.assign(from: fb!.assumingMemoryBound(to: float4.self), count: count)
+    let fbCopy = UnsafeMutablePointer<Float>.allocate(capacity: count * 4)
+    fbCopy.assign(from: fb!.assumingMemoryBound(to: Float.self), count: count * 4)
 
     tex.modifyPixelData({ (ptr, len) in
       if (len != count * 4) { // len: bytes, count: pixels
@@ -105,16 +106,25 @@ class GameScene: SKScene {
 //      texPtr.assign(from: fbCopy, count: count)
       for y in 0..<h {
         for x in 0..<w {
-          let p = clamp(fbCopy[y * w + x], min: 0, max: 1) * 255
-          texPtr[(y * w + x) * 4 + 0] = UInt8(p.x)
-          texPtr[(y * w + x) * 4 + 2] = UInt8(p.y)
-          texPtr[(y * w + x) * 4 + 1] = UInt8(p.z)
-          texPtr[(y * w + x) * 4 + 3] = UInt8(p.w)
+//          let p = clamp(fbCopy[y * w + x], min: 0, max: 1) * 255
+          texPtr[(y * w + x) * 4 + 0] = self.color(fbCopy[(y * w + x) * 4 + 0])//UInt8(p.x)
+          texPtr[(y * w + x) * 4 + 2] = self.color(fbCopy[(y * w + x) * 4 + 2])//255//UInt8(p.y)
+          texPtr[(y * w + x) * 4 + 1] = self.color(fbCopy[(y * w + x) * 4 + 1])//255//UInt8(p.z)
+          texPtr[(y * w + x) * 4 + 3] = UInt8(self.i % 255)//UInt8(p.w)
+          self.i+=1
         }
       }
       fbCopy.deallocate()
     })
   }
 
+  func color(_ v: Float) -> UInt8 {
+    if (v < 0) {
+      return 0
+    } else if (v > 1) {
+      return 255
+    }
+    return UInt8(v * 255)
+  }
 
 }

@@ -45,7 +45,7 @@ constexpr int FB_HEIGHT = 1024;
 GLFWwindow *window;
 constexpr int FRAME_AVG_COUNT = 60;
 double frameTimes[FRAME_AVG_COUNT];
-F32ColorFramebuffer framebuffer(FB_WIDTH, FB_HEIGHT);
+U8ColorFramebuffer framebuffer(FB_WIDTH, FB_HEIGHT);
 
 void mainLoop();
 
@@ -129,7 +129,7 @@ void mainLoop() {
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                renderTeapot::getFBWidth(), renderTeapot::getFBHeight(),
-               0, GL_RGBA, GL_FLOAT,
+               0, GL_RGBA, GL_UNSIGNED_BYTE,
                framebuffer.getRawColorBuffer());
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -20,7 +20,7 @@ public:
     posix_memalign(&ptr, 32, sizeof(array_t) * width * height);
     colorBuffer = static_cast<array_t*>(ptr);
 #else
-    colorBuffer = static_cast<array_t *>(std::aligned_alloc(32), sizeof(array_t) * width * height));
+    colorBuffer = static_cast<array_t *>(std::aligned_alloc(32, sizeof(array_t) * width * height));
 #endif
     printf("align: %lx, %llx\n", alignof(color_t), reinterpret_cast<uint64_t>(colorBuffer) & 0xFFFFu);
     depthBuffer = static_cast<float *>(malloc(sizeof(float) * width * height));
