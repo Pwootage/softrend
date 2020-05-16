@@ -58,17 +58,20 @@ set(SOURCE_FILES
         src/renderTeapot.cpp
         )
 
-set(HEADER_FILES
+set(INCLUDE_HEADERS
         include/softrend/SoftwareRasterizer.hpp
         include/softrend/VertexShader.hpp
         include/softrend/VertexTypes.hpp
-        src/shader/BasicVertexShader.hpp
-        src/shader/FragmentShader.hpp
-        src/shader/PhongFragmentShader.hpp
         include/softrend/VertexBuffer.hpp
         include/softrend/IndexBuffer.hpp
         include/softrend/Framebuffer.hpp
         include/softrend/ArrayFramebuffer.hpp
+        )
+
+set(HEADER_FILES
+        src/shader/BasicVertexShader.hpp
+        src/shader/FragmentShader.hpp
+        src/shader/PhongFragmentShader.hpp
         src/renderTeapot.hpp)
 
 set(RESOURCE_FILES
@@ -81,9 +84,9 @@ file(COPY ${RESOURCE_FILES}
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/models/)
 
 add_library(softrend INTERFACE)
+target_link_libraries(softrend INTERFACE glm)
 target_include_directories(softrend INTERFACE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+        "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Set up emscripten or regular executable appropriately
 if (EMSCRIPTEN)
