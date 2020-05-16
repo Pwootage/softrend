@@ -2,7 +2,7 @@
 #include <random>
 
 #include "renderTeapot.hpp"
-#include "shader/VertexTypes.hpp"
+#include "softrend/VertexTypes.hpp"
 #include "shader/BasicVertexShader.hpp"
 #include "shader/PhongFragmentShader.hpp"
 

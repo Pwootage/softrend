@@ -9,11 +9,11 @@
 #include <iomanip>
 #include <vector>
 #include <random>
-#include "src/SoftwareRasterizer.hpp"
-#include "src/buffers/VertexBuffer.hpp"
-#include "src/buffers/IndexBuffer.hpp"
-#include "src/buffers/ArrayFramebuffer.hpp"
-#include "src/shader/VertexTypes.hpp"
+#include "softrend/SoftwareRasterizer.hpp"
+#include "softrend/VertexBuffer.hpp"
+#include "softrend/IndexBuffer.hpp"
+#include "softrend/ArrayFramebuffer.hpp"
+#include "softrend/VertexTypes.hpp"
 #include "src/shader/BasicVertexShader.hpp"
 #include "src/shader/PhongFragmentShader.hpp"
 #include "src/renderTeapot.hpp"

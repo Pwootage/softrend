@@ -10,11 +10,11 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtx/type_aligned.hpp>
-#include "buffers/VertexBuffer.hpp"
-#include "buffers/IndexBuffer.hpp"
-#include "shader/VertexShader.hpp"
-#include "shader/FragmentShader.hpp"
-#include "buffers/Framebuffer.hpp"
+#include "VertexBuffer.hpp"
+#include "IndexBuffer.hpp"
+#include "VertexShader.hpp"
+#include "../../src/shader/FragmentShader.hpp"
+#include "Framebuffer.hpp"
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>

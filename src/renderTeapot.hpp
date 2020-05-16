@@ -1,7 +1,7 @@
 #ifndef SOFTREND_RENDERTEAPOT_HPP
 #define SOFTREND_RENDERTEAPOT_HPP
 
-#include "SoftwareRasterizer.hpp"
+#include "softrend/SoftwareRasterizer.hpp"
 
 namespace renderTeapot {
 

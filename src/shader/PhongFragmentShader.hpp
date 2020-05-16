@@ -1,7 +1,7 @@
 #ifndef SOFTREND_BASICFRAGMENTSHADER_HPP
 #define SOFTREND_BASICFRAGMENTSHADER_HPP
 
-#include "VertexTypes.hpp"
+#include "softrend/VertexTypes.hpp"
 #include "FragmentShader.hpp"
 
 namespace softrend {

@@ -47,6 +47,7 @@ endif ()
 
 # Files
 add_subdirectory(gba)
+add_subdirectory(extern/glm)
 
 include_directories(include)
 
@@ -58,16 +59,16 @@ set(SOURCE_FILES
         )
 
 set(HEADER_FILES
-        src/SoftwareRasterizer.hpp
-        src/shader/VertexShader.hpp
-        src/shader/VertexTypes.hpp
+        include/softrend/SoftwareRasterizer.hpp
+        include/softrend/VertexShader.hpp
+        include/softrend/VertexTypes.hpp
         src/shader/BasicVertexShader.hpp
         src/shader/FragmentShader.hpp
         src/shader/PhongFragmentShader.hpp
-        src/buffers/VertexBuffer.hpp
-        src/buffers/IndexBuffer.hpp
-        src/buffers/Framebuffer.hpp
-        src/buffers/ArrayFramebuffer.hpp
+        include/softrend/VertexBuffer.hpp
+        include/softrend/IndexBuffer.hpp
+        include/softrend/Framebuffer.hpp
+        include/softrend/ArrayFramebuffer.hpp
         src/renderTeapot.hpp)
 
 set(RESOURCE_FILES
@@ -78,6 +79,11 @@ set(RESOURCE_FILES
 # copy our resources
 file(COPY ${RESOURCE_FILES}
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/models/)
+
+add_library(softrend INTERFACE)
+target_include_directories(softrend INTERFACE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 # Set up emscripten or regular executable appropriately
 if (EMSCRIPTEN)
@@ -104,7 +110,7 @@ if (EMSCRIPTEN)
     #    add_dependencies(softrend_js softrend.bc)
 
 else ()
-    add_executable(softrend ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
+    add_executable(softrend-test ${SOURCE_FILES} ${HEADER_FILES} ${GLM_INCLUDE_DIR})
 
-    target_link_libraries(softrend glfw ${OPENGL_gl_LIBRARY})
+    target_link_libraries(softrend-test glfw ${OPENGL_gl_LIBRARY} glm)
 endif ()

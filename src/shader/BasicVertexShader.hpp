@@ -1,8 +1,8 @@
 #ifndef SOFTREND_BASICVERTEXSHADER_HPP
 #define SOFTREND_BASICVERTEXSHADER_HPP
 
-#include "VertexShader.hpp"
-#include "VertexTypes.hpp"
+#include "softrend/VertexShader.hpp"
+#include "softrend/VertexTypes.hpp"
 
 namespace softrend {
 
